@@ -1,0 +1,18 @@
+# Same as root
+node_modules/
+package-lock.json
+yarn.lock
+.env
+.env.local
+dist/
+*.d.ts
+*.js.map
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+coverage/
+.nyc_output/
+logs/
