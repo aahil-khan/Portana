@@ -31,7 +31,7 @@ export class QdrantManager {
       await this.client.getCollections();
       await this.ensureCollection();
       this.initialized = true;
-      console.log('✓ Qdrant initialized');
+      console.log('Qdrant initialized');
     } catch (error) {
       console.error('Failed to initialize Qdrant:', error);
       throw error;
@@ -48,25 +48,20 @@ export class QdrantManager {
           size: this.vectorDimension,
           distance: 'Cosine',
         },
-        payload_schema: {
-          project_id: { type: 'keyword' },
-          source: { type: 'keyword' },
-          chunk_index: { type: 'integer' },
-        },
-      });
-      console.log(`✓ Created collection: ${this.collectionName}`);
+      } as any);
+      console.log(`Created collection: ${this.collectionName}`);
     }
   }
 
   async upsert(points: VectorPoint[]): Promise<void> {
     if (!this.client) throw new Error('Qdrant not initialized');
-    const qdrantPoints = points.map((p) => ({
+    const qdrantPoints = points.map(p => ({
       id: this.hashStringToId(p.id),
       vector: p.vector,
       payload: p.payload,
     }));
-    await this.client.upsert(this.collectionName, { points: qdrantPoints });
-    console.log(`✓ Upserted ${points.length} vectors`);
+    await this.client.upsert(this.collectionName, { points: qdrantPoints } as any);
+    console.log(`Upserted ${points.length} vectors`);
   }
 
   async search(queryVector: number[], limit: number = 10, scoreThreshold?: number): Promise<SearchResult[]> {
@@ -76,7 +71,7 @@ export class QdrantManager {
       limit,
       score_threshold: scoreThreshold,
       with_payload: true,
-    });
+    } as any);
     return response.map((r: any) => ({
       id: String(r.id),
       score: r.score,
@@ -91,7 +86,7 @@ export class QdrantManager {
       limit,
       filter: filter as any,
       with_payload: true,
-    });
+    } as any);
     return response.map((r: any) => ({
       id: String(r.id),
       score: r.score,
@@ -105,8 +100,8 @@ export class QdrantManager {
       filter: {
         must: [{ key: 'project_id', match: { value: projectId } }],
       },
-    });
-    console.log(`✓ Deleted vectors for project: ${projectId}`);
+    } as any);
+    console.log(`Deleted vectors for project: ${projectId}`);
   }
 
   async getStats(): Promise<{ points_count: number; vectors_count: number }> {
@@ -119,9 +114,7 @@ export class QdrantManager {
   }
 
   async healthCheck(): Promise<QdrantHealthCheck> {
-    if (!this.client) {
-      return { status: 'error', latency_ms: 0, error: 'Qdrant not initialized' };
-    }
+    if (!this.client) return { status: 'error', latency_ms: 0, error: 'Qdrant not initialized' };
     const startTime = Date.now();
     try {
       await this.client.getCollections();
@@ -139,13 +132,13 @@ export class QdrantManager {
     if (!this.client) throw new Error('Qdrant not initialized');
     await this.client.deleteCollection(this.collectionName);
     await this.ensureCollection();
-    console.log('✓ Cleared collection');
+    console.log('Cleared collection');
   }
 
   async close(): Promise<void> {
     this.client = null;
     this.initialized = false;
-    console.log('✓ Qdrant connection closed');
+    console.log('Qdrant connection closed');
   }
 
   private hashStringToId(str: string): string {
