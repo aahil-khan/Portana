@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { getOnboarding } from '../onboarding/index.js';
+import { getResumeParser } from '../services/index.js';
 
 export async function onboardingRoutes(app: FastifyInstance) {
   const onboarding = getOnboarding();
@@ -163,6 +164,37 @@ export async function onboardingRoutes(app: FastifyInstance) {
       });
     } catch (error) {
       reply.code(500).send({ success: false, error: 'Finalization failed' });
+    }
+  });
+
+  // POST /api/onboarding/parse-resume - Parse resume without onboarding session
+  // Useful for preview/testing resume parsing
+  app.post<{
+    Body: { resumeText: string };
+  }>('/api/onboarding/parse-resume', async (request, reply) => {
+    try {
+      const { resumeText } = request.body;
+
+      if (!resumeText || resumeText.trim().length === 0) {
+        return reply.code(400).send({
+          error: 'Resume text is required',
+        });
+      }
+
+      const parser = getResumeParser();
+      const parsed = await parser.parseResume(resumeText);
+
+      reply.send({
+        success: true,
+        data: parsed,
+        message: 'Resume parsed successfully',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to parse resume';
+      reply.code(400).send({
+        success: false,
+        error: errorMessage,
+      });
     }
   });
 }

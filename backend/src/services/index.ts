@@ -3,3 +3,4 @@ export { RetrieverService, getRetriever, type RetrievalResult, type RetrievalFil
 export { GeneratorService, getGenerator, type ChatMessage, type GeneratorConfig } from './generator.js';
 export { MemoryService, getMemory, type Session, type ChatMessage as MemoryChatMessage } from './memory.js';
 export { DeduplicatorService, getDeduplicator, type DeduplicationResult, type ContentFingerprint } from './deduplicator.js';
+export { ResumeParserService, getResumeParser, type ExtractedResumeData, type Experience, type Education } from './resume-parser.js';

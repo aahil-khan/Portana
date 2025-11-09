@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { getEmbedder } from '../services/embedder.js';
 import { getDeduplicator } from '../services/deduplicator.js';
+import { getResumeParser } from '../services/resume-parser.js';
 
 // Zod schemas for each step
 export const Step1Schema = z.object({
@@ -14,8 +15,26 @@ export const Step1Schema = z.object({
 
 export const Step2Schema = z.object({
   resumeText: z.string().min(100, 'Resume too short'),
-  highlightedSkills: z.array(z.string()).min(1, 'Select at least one skill'),
 });
+
+export const Step2ResumeParseSchema = z.object({
+  resumeText: z.string().min(100, 'Resume too short'),
+});
+
+export type Step2ParseResult = {
+  skills: string[];
+  experience: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description?: string;
+  }>;
+  education: Array<{
+    degree: string;
+    institution: string;
+    field?: string;
+  }>;
+};
 
 export const Step3Schema = z.object({
   githubUsername: z.string().optional(),
@@ -44,10 +63,25 @@ export type Step3Data = z.infer<typeof Step3Schema>;
 export type Step4Data = z.infer<typeof Step4Schema>;
 export type Step5Data = z.infer<typeof Step5Schema>;
 
+export interface Step2DataParsed extends Step2Data {
+  skills?: string[];
+  experience?: Array<{
+    title: string;
+    company: string;
+    duration: string;
+    description?: string;
+  }>;
+  education?: Array<{
+    degree: string;
+    institution: string;
+    field?: string;
+  }>;
+}
+
 export interface OnboardingSession {
   id: string;
   step1?: Step1Data;
-  step2?: Step2Data;
+  step2?: Step2DataParsed;
   step3?: Step3Data;
   step4?: Step4Data;
   step5?: Step5Data;
@@ -101,19 +135,40 @@ export class OnboardingService {
     }
   }
 
-  async step2(sessionId: string, data: Step2Data): Promise<{ success: boolean; error?: string }> {
+  async step2(sessionId: string, data: Step2Data): Promise<{ success: boolean; error?: string; parsed?: Step2DataParsed }> {
     try {
       const session = this.getSession(sessionId);
       if (!session || !session.step1) {
         return { success: false, error: 'Complete step 1 first' };
       }
 
-      const parsed = Step2Schema.safeParse(data);
-      if (!parsed.success) {
+      const validated = Step2Schema.safeParse(data);
+      if (!validated.success) {
         return { success: false, error: 'Invalid resume data' };
       }
 
-      // Embed resume text using GPT-4 (gracefully skip if unavailable)
+      let parsedData: Step2DataParsed = validated.data;
+
+      // Auto-parse resume using GPT-4 to extract skills and experience
+      try {
+        const parser = getResumeParser();
+        const extractedData = await parser.parseResume(data.resumeText);
+
+        parsedData = {
+          ...validated.data,
+          skills: extractedData.skills,
+          experience: extractedData.experience,
+          education: extractedData.education,
+        };
+
+        console.log(`[Resume Parser] Extracted ${extractedData.skills.length} skills for session ${sessionId}`);
+      } catch (error) {
+        // Gracefully handle parsing errors - continue without extraction
+        console.warn(`[Resume Parser] Failed to parse resume for session ${sessionId}:`, error);
+        // Still proceed with the raw resume text
+      }
+
+      // Embed resume text using embedder service
       try {
         const embedder = getEmbedder();
 
@@ -129,7 +184,10 @@ export class OnboardingService {
               projectId: sessionId,
               source: 'resume',
               chunkIndex: i,
-              metadata: { skills: data.highlightedSkills },
+              metadata: {
+                skills: parsedData.skills || [],
+                hasExperience: (parsedData.experience?.length || 0) > 0,
+              },
             });
           } catch (error) {
             console.warn(`Failed to embed chunk ${i}:`, error);
@@ -144,10 +202,10 @@ export class OnboardingService {
         console.warn('Embedding service unavailable:', error);
       }
 
-      session.step2 = parsed.data;
+      session.step2 = parsedData;
       this.sessions.set(sessionId, session);
 
-      return { success: true };
+      return { success: true, parsed: parsedData };
     } catch (error) {
       return { success: false, error: 'Step 2 failed' };
     }

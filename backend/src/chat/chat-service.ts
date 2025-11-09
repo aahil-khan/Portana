@@ -101,9 +101,9 @@ export class ChatService {
             context.userBio = onboardSession.step1.bio;
           }
 
-          // Extract skills from step 2
+          // Extract skills from step 2 (auto-parsed from resume)
           if (onboardSession.step2) {
-            context.userSkills = onboardSession.step2.highlightedSkills;
+            context.userSkills = onboardSession.step2.skills || [];
           }
         }
       } catch (error) {
