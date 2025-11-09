@@ -30,8 +30,6 @@ docker-compose up -d
 curl http://localhost:3000/health
 ```
 
-See [QUICKSTART.md](./QUICKSTART.md) for more options.
-
 ## ✨ Key Features
 
 - **Resume Processing**: Upload and parse resumes with AI-powered data extraction
@@ -85,9 +83,23 @@ backend/
 - `GET /api/portfolio` - Retrieve complete portfolio data
 - `GET /health` - Health check
 
+**Onboarding**
+- `POST /api/onboarding/init` - Initialize user setup
+- `POST /api/onboarding/complete` - Complete initial onboarding
+- `GET /api/onboarding/status` - Check setup progress
+
 **Admin**
 - `GET /api/admin/stats` - Server statistics and system info
 - `DELETE /api/admin/data` - Clear all portfolio data
+- `POST /api/admin/update-config` - Update user preferences
+
+**Webhooks** (see dedicated section below)
+- `POST /api/webhooks/ingest` - Generic webhook handler (n8n compatible)
+- `POST /api/webhooks/github` - GitHub push events
+- `POST /api/webhooks/medium` - Medium RSS content
+- `GET /api/webhooks/status` - Queue health
+- `GET /api/webhooks/dlq` - Dead letter queue
+- `POST /api/webhooks/dlq/retry/:id` - Retry failed items
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for full API documentation with examples.
 
@@ -144,13 +156,38 @@ docker-compose up -d
 
 **Hosting Options**: Any Docker-compatible host (home server, cloud, VPS, managed platforms)
 
-## 🛠️ Building a Frontend
+## � Webhook Integration (n8n Ready)
+
+Connect external data sources via webhooks. Perfect for n8n automation workflows:
+
+**Generic Webhook Endpoint**: `POST /api/webhooks/ingest`
+- Accept content from n8n workflows
+- Support GitHub push events, Medium articles, and custom sources
+- HMAC signature or Bearer token authentication
+- Automatic retry queue with dead-letter queue
+- 202 Accepted response (async processing)
+
+**Pre-configured Endpoints**:
+- `POST /api/webhooks/github` - GitHub push events (HMAC-SHA256)
+- `POST /api/webhooks/medium` - Medium RSS content (HMAC-SHA256)
+- `GET /api/webhooks/status` - Queue health check
+- `GET /api/webhooks/dlq` - Dead letter queue monitoring
+- `POST /api/webhooks/dlq/retry/:id` - Manual retry failed items
+
+**Example n8n Workflow**:
+```
+GitHub Webhook → Fetch Repo → Summarize with GPT → Portfolio OS /api/webhooks/ingest
+```
+
+
+## �🛠️ Building a Frontend
 
 This backend is designed to be frontend-agnostic. Build web, mobile, or desktop clients using:
 
 - **Chat Stream**: `POST /api/chat` returns server-sent events
 - **Data Query**: `GET /api/portfolio` for structured resume data  
 - **Upload**: `POST /api/upload` to process new resumes
+- **Webhooks**: `POST /api/webhooks/ingest` for automated data ingestion
 - **Auth**: JWT tokens via headers (see docs)
 
 **Example Frontend Stacks**:
