@@ -26,16 +26,33 @@ export interface EmbeddedContent {
 }
 
 export class EmbedderService {
-  private client: OpenAI;
+  private client: OpenAI | null = null;
   private model: string;
   private dimensions: number;
+  private apiKeyAvailable: boolean;
 
   constructor(config: EmbedderConfig = {}) {
-    this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
     this.model = config.model || 'text-embedding-3-small';
     this.dimensions = config.dimensions || 1536;
+    this.apiKeyAvailable = !!process.env.OPENAI_API_KEY;
+    
+    if (this.apiKeyAvailable) {
+      try {
+        this.client = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+      } catch (error) {
+        console.warn('Failed to initialize OpenAI client:', error);
+        this.apiKeyAvailable = false;
+      }
+    }
+  }
+
+  private getClient(): OpenAI {
+    if (!this.client) {
+      throw new Error('OpenAI API key not available. Set OPENAI_API_KEY environment variable.');
+    }
+    return this.client;
   }
 
   async embedText(text: string): Promise<number[]> {
@@ -44,7 +61,7 @@ export class EmbedderService {
     }
 
     try {
-      const response = await this.client.embeddings.create({
+      const response = await this.getClient().embeddings.create({
         input: text,
         model: this.model,
         encoding_format: 'float',
@@ -68,7 +85,7 @@ export class EmbedderService {
     }
 
     try {
-      const response = await this.client.embeddings.create({
+      const response = await this.getClient().embeddings.create({
         input: texts,
         model: this.model,
         encoding_format: 'float',

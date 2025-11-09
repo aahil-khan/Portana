@@ -34,12 +34,29 @@ export interface Education {
  * - Provides structured data for knowledge base
  */
 export class ResumeParserService {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
+  private apiKeyAvailable: boolean;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    this.apiKeyAvailable = !!process.env.OPENAI_API_KEY;
+    
+    if (this.apiKeyAvailable) {
+      try {
+        this.openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+      } catch (error) {
+        console.warn('Failed to initialize OpenAI client:', error);
+        this.apiKeyAvailable = false;
+      }
+    }
+  }
+
+  private getClient(): OpenAI {
+    if (!this.openai) {
+      throw new Error('OpenAI API key not available. Set OPENAI_API_KEY environment variable.');
+    }
+    return this.openai;
   }
 
   /**
@@ -92,7 +109,7 @@ IMPORTANT RULES:
 
       const userPrompt = `Parse this resume and extract the structured data:\n\n${resumeText}`;
 
-      const completion = await this.openai.chat.completions.create({
+      const completion = await this.getClient().chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
@@ -142,7 +159,7 @@ Focus on:
 
       const userPrompt = `Extract all technical skills from this resume:\n\n${resumeText}`;
 
-      const completion = await this.openai.chat.completions.create({
+      const completion = await this.getClient().chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
@@ -199,7 +216,7 @@ Order by most recent first.`;
 
       const userPrompt = `Extract all work experience from this resume:\n\n${resumeText}`;
 
-      const completion = await this.openai.chat.completions.create({
+      const completion = await this.getClient().chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
