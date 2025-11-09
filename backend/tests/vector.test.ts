@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { QdrantManager, VectorPoint, SearchResult } from '../src/vector';
+import { QdrantManager, VectorPoint } from '../src/vector';
 
 describe('QdrantManager', () => {
   let qdrantManager: QdrantManager;

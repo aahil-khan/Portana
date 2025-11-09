@@ -17,7 +17,7 @@ export interface ContentFingerprint {
 
 export class DeduplicatorService {
   private fingerprints = new Map<string, ContentFingerprint>();
-  private similarityThreshold = 0.95;
+  private similarityThreshold = 0.70;
 
   addContent(id: string, text: string, projectId: string, source: string): ContentFingerprint {
     const hash = this.generateHash(text);

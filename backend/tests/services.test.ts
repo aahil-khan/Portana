@@ -196,8 +196,8 @@ describe('Core Services', () => {
     });
 
     it('should return null for expired session', async () => {
-      const session = memory.createSession();
       memory.setSessionTTL(1);
+      const session = memory.createSession();
 
       await new Promise((r) => setTimeout(r, 50));
 
