@@ -68,8 +68,9 @@ export class ResumeParserService {
     }
 
     try {
-      const systemPrompt = `You are an expert resume parser. Extract structured information from the provided resume text.
-Return a JSON object with the following structure:
+      const systemPrompt = `You are an expert resume parser. Extract ONLY information explicitly stated in the provided resume text.
+
+Return a JSON object with this exact structure:
 {
   "skills": ["skill1", "skill2", ...],
   "experience": [
@@ -84,38 +85,39 @@ Return a JSON object with the following structure:
   ],
   "education": [
     {
-      "degree": "Bachelor's",
-      "institution": "University Name",
-      "field": "Computer Science",
+      "degree": "Degree Type",
+      "institution": "University/School Name",
+      "field": "Field of Study",
       "graduationYear": 2020
     }
   ],
-  "summary": "Brief professional summary extracted from resume",
-  "name": "Full Name if found",
-  "email": "Email if found",
-  "phoneNumber": "Phone number if found",
-  "location": "Location if found"
+  "summary": "Professional summary or objective from the resume",
+  "name": "Full Name",
+  "email": "Email address",
+  "phoneNumber": "Phone number",
+  "location": "City, State or Country"
 }
 
-IMPORTANT RULES:
-- Extract ONLY information explicitly stated in the resume
-- For skills, extract technical skills, programming languages, frameworks, and tools
-- For experience, include all jobs/roles mentioned
-- For education, include all degrees/certifications
-- If any field is not found, omit it or use empty arrays
-- Make sure skills are specific and actionable (e.g., "React", "Node.js", "TypeScript" not just "Programming")
-- Keep descriptions concise (1-2 sentences max)
-- Return valid JSON only, no markdown formatting`;
+CRITICAL RULES:
+1. Extract ONLY information that is explicitly present in the resume text
+2. Do NOT infer, assume, or hallucinate any information
+3. If a field is not found in the resume, OMIT it entirely (don't use empty strings or null)
+4. For skills: Extract only technical skills, programming languages, frameworks, tools mentioned
+5. Do NOT add generic skills like "Communication" or "Problem Solving" unless explicitly stated
+6. For experience: Include all employment entries with dates and descriptions as provided
+7. For education: Include all degrees/certifications with full details as stated
+8. For duration: Extract dates exactly as found, format as MM/YYYY - MM/YYYY if available
+9. Return valid JSON ONLY, no markdown, no extra text`;
 
-      const userPrompt = `Parse this resume and extract the structured data:\n\n${resumeText}`;
+      const userPrompt = `Parse this resume and extract ONLY explicitly stated information:\n\n${resumeText}`;
 
       const completion = await this.getClient().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.3, // Low temperature for consistent parsing
+        temperature: 0.2, // Very low temperature for consistent parsing
         max_tokens: 2000,
       });
 
@@ -145,27 +147,27 @@ IMPORTANT RULES:
 
     try {
       const systemPrompt = `You are an expert at identifying technical skills from resumes.
-Extract a JSON array of technical skills mentioned in the resume.
+Extract a JSON array of technical skills EXPLICITLY MENTIONED in the resume.
 Return ONLY a valid JSON array of strings, no other text.
 Example: ["Python", "React", "AWS", "PostgreSQL", "Docker"]
 
-Focus on:
-- Programming languages
-- Frameworks and libraries
-- Tools and platforms
-- Databases
-- Cloud services
-- Methodologies`;
+RULES:
+1. Extract ONLY skills explicitly stated in the resume
+2. Do NOT infer or add generic skills
+3. Include: Programming languages, frameworks, libraries, tools, platforms, databases, cloud services
+4. Do NOT include soft skills unless explicitly technical (e.g., "Agile" is OK, "Communication" is not)
+5. Each skill should be specific and technical
+6. Return ONLY valid JSON array, no markdown`;
 
-      const userPrompt = `Extract all technical skills from this resume:\n\n${resumeText}`;
+      const userPrompt = `Extract ONLY the technical skills explicitly mentioned in this resume:\n\n${resumeText}`;
 
       const completion = await this.getClient().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 500,
       });
 
@@ -198,31 +200,36 @@ Focus on:
 
     try {
       const systemPrompt = `You are an expert at extracting work experience from resumes.
-Extract a JSON array of work experience from the resume.
+Extract a JSON array of work experience EXPLICITLY STATED in the resume.
 Return ONLY a valid JSON array with objects like this:
 [
   {
-    "title": "Job Title",
+    "title": "Job Title exactly as stated",
     "company": "Company Name",
-    "duration": "01/2020 - 12/2022",
+    "duration": "MM/YYYY - MM/YYYY",
     "description": "Brief description of responsibilities and achievements",
     "startYear": 2020,
     "endYear": 2022
   }
 ]
 
-If end year is "Present" or "Current", estimate based on context or use current year.
-Order by most recent first.`;
+RULES:
+1. Extract ONLY employment entries explicitly listed in the resume
+2. Use dates exactly as provided in the resume
+3. For missing end dates, use current year or "Present"
+4. Do NOT infer positions that are not clearly stated
+5. Order by most recent first if possible
+6. Each description should be 1-2 sentences max`;
 
-      const userPrompt = `Extract all work experience from this resume:\n\n${resumeText}`;
+      const userPrompt = `Extract ONLY the work experience explicitly mentioned in this resume:\n\n${resumeText}`;
 
       const completion = await this.getClient().chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 1500,
       });
 
