@@ -3,6 +3,10 @@ import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifyRateLimit from '@fastify/rate-limit';
 import { loadEnv } from './env.js';
+import { registerAdminRoutes } from './routes/admin.js';
+import { registerChatRoutes } from './routes/chat.js';
+import { onboardingRoutes as registerOnboardingRoutes } from './routes/onboarding.js';
+import { registerWebhookRoutes } from './routes/webhooks.js';
 
 /**
  * Initialize Fastify application with all plugins and middleware
@@ -121,12 +125,20 @@ export async function createApp(): Promise<FastifyInstance> {
 }
 
 /**
- * Start the Fastify server
+ * Start the Fastify server and register all routes
  */
 export async function startServer(app: FastifyInstance): Promise<void> {
   const env = loadEnv();
 
   try {
+    // Register all routes
+    await registerAdminRoutes(app);
+    await registerChatRoutes(app);
+    await registerOnboardingRoutes(app);
+    await registerWebhookRoutes(app);
+
+    app.log.info('All routes registered');
+
     await app.listen({ port: env.PORT, host: '0.0.0.0' });
     app.log.info(`Server listening at http://localhost:${env.PORT}`);
   } catch (err) {
