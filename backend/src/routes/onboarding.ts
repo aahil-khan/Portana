@@ -9,12 +9,14 @@ export async function onboardingRoutes(app: FastifyInstance) {
   // POST /api/onboarding/start - Initialize onboarding
   app.post('/api/onboarding/start', async (_request, reply) => {
     try {
-      const sessionId = uuidv4();
-      const session = onboarding.createSession(sessionId);
+      const userId = uuidv4();
+      const sessionToken = uuidv4(); // In production, this should be a JWT token
+      onboarding.createSession(userId);
 
       reply.code(201).send({
         success: true,
-        sessionId: session.id,
+        user_id: userId,
+        session_token: sessionToken,
         message: 'Onboarding started',
       });
     } catch (error) {
