@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { getEmbedder } from '../services/embedder';
-import { getDeduplicator } from '../services/deduplicator';
+import { getEmbedder } from '../services/embedder.js';
+import { getDeduplicator } from '../services/deduplicator.js';
 
 // Zod schemas for each step
 export const Step1Schema = z.object({
