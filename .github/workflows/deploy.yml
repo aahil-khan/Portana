@@ -41,20 +41,31 @@ jobs:
       
       - name: Deploy to Home Server (Docker)
         run: |
-          cd backend
-          docker-compose down
-          docker-compose build --no-cache
-          docker-compose up -d
+          cd /home/aahil/projects/Portana
+          docker compose down
+          docker compose build --no-cache
+          docker compose up -d
+      
+      - name: Wait for containers to start
+        run: sleep 15
       
       - name: Health Check
         run: |
-          sleep 10
-          curl -f http://localhost:3000/health || exit 1
+          curl -f http://localhost:3200/health || (docker compose logs && exit 1)
       
-      - name: Log Deployment
+      - name: Log Deployment Success
+        if: success()
         run: |
-          echo "✅ Dev deployment successful"
-          docker-compose logs backend | head -20
+          echo "✅ Dev deployment successful at $(date)"
+          docker compose ps
+          docker compose logs backend --tail 20
+      
+      - name: Log Deployment Failure
+        if: failure()
+        run: |
+          echo "❌ Dev deployment failed"
+          docker compose logs
+          docker compose ps
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
