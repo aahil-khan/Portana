@@ -122,7 +122,7 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe.skip('Step 2: Resume Processing', () => {
+  describe('Step 2: Resume Processing', () => {
     beforeEach(async () => {
       const onboarding = getOnboarding();
       onboarding.createSession(sessionId);
@@ -347,7 +347,7 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe.skip('Complete Onboarding Flow', () => {
+  describe('Complete Onboarding Flow', () => {
     it('should complete full 5-step onboarding', async () => {
       const onboarding = getOnboarding();
       onboarding.createSession(sessionId);
