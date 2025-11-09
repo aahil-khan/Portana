@@ -1,4 +1,4 @@
-import { getQdrant } from '../vector';
+import { getQdrant } from '../vector/index.js';
 
 export interface RetrievalResult {
   id: string;

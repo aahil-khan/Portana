@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { getQdrant } from '../vector';
-import type { VectorPoint } from '../vector';
+import { getQdrant } from '../vector/index.js';
+import type { VectorPoint } from '../vector/index.js';
 
 export interface EmbedderConfig {
   model?: string;

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import OpenAI from 'openai';
-import { getMemory } from '../services/memory';
-import { getRetriever } from '../services/retriever';
-import { getEmbedder } from '../services/embedder';
-import { getOnboarding } from '../onboarding';
+import { getMemory } from '../services/memory.js';
+import { getRetriever } from '../services/retriever.js';
+import { getEmbedder } from '../services/embedder.js';
+import { getOnboarding } from '../onboarding/index.js';
 
 // Zod schemas for chat
 export const ChatMessageSchema = z.object({
