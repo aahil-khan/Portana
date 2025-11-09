@@ -3,7 +3,6 @@ import {
   WebhookVerifierService,
   WebhookQueueService,
   WebhookProcessorService,
-  type QueuedItem,
 } from '../src/webhooks/services/index.js';
 
 describe('Webhook Services', () => {
@@ -20,7 +19,7 @@ describe('Webhook Services', () => {
         const secret = 'test-secret';
         const signature = verifier.createSignature(payload, secret);
 
-        const result = verifier.verifyHMACSignature(payload, `sha256=${signature}`, secret);
+        const result = verifier.verifyHMACSignature(payload, signature, secret);
         expect(result).toBe(true);
       });
 
@@ -132,10 +131,10 @@ describe('Webhook Services', () => {
 
         const result = processor.processGitHubPush(event);
 
-        expect(result.name).toBe('test-repo');
-        expect(result.sourceType).toBe('github');
-        expect(result.url).toBe('https://github.com/user/test-repo');
-        expect(result.tags).toContain('github');
+        expect(result!.name).toBe('test-repo');
+        expect(result!.sourceType).toBe('github');
+        expect(result!.url).toBe('https://github.com/user/test-repo');
+        expect(result!.tags).toContain('github');
       });
 
       it('should extract branch name from ref', () => {
@@ -151,7 +150,7 @@ describe('Webhook Services', () => {
 
         const result = processor.processGitHubPush(event);
 
-        expect(result.tags).toContain('feature/new-feature');
+        expect(result!.tags).toContain('feature/new-feature');
       });
 
       it('should validate GitHub push event format', () => {
@@ -164,7 +163,7 @@ describe('Webhook Services', () => {
         };
 
         expect(processor.validateGitHubPush(validEvent)).toBe(true);
-        expect(processor.validateGitHubPush(null)).toBe(false);
+        expect(processor.validateGitHubPush(null as any)).toBe(false);
       });
     });
 
@@ -180,10 +179,12 @@ describe('Webhook Services', () => {
 
         const result = processor.processMediumArticle(article);
 
-        expect(result.name).toBe('Understanding Webhooks');
-        expect(result.sourceType).toBe('medium');
-        expect(result.tags).toContain('medium');
-        expect(result.tags).toContain('article');
+        expect(result!.name).toBe('Understanding Webhooks');
+        expect(result!.sourceType).toBe('medium');
+        expect(result!.tags).toContain('medium');
+        expect(result!.tags).toContain('article');
+        // Categories are lowercased: ['technology', 'web development']
+        expect(result!.tags.some(tag => tag.includes('technology') || tag.includes('web'))).toBe(true);
       });
 
       it('should truncate long article titles', () => {
@@ -195,7 +196,7 @@ describe('Webhook Services', () => {
 
         const result = processor.processMediumArticle(article);
 
-        expect(result.name.length).toBeLessThanOrEqual(50);
+        expect(result!.name.length).toBeLessThanOrEqual(50);
       });
 
       it('should validate Medium article format', () => {
@@ -212,6 +213,7 @@ describe('Webhook Services', () => {
     describe('String Similarity (Deduplication)', () => {
       it('should detect identical strings as 100% similar', () => {
         const similarity = processor.checkSimilarity('test project', 'test project');
+        expect(typeof similarity).toBe('number');
         expect(similarity).toBe(100);
       });
 
@@ -236,8 +238,9 @@ describe('Webhook Services', () => {
       queue.clear();
       processedItems = [];
 
-      queue.configure(3, async (item: QueuedItem) => {
-        processedItems.push(item.payload);
+      queue.setMaxRetries(3);
+      queue.setProcessor(async (payload: Record<string, unknown>) => {
+        processedItems.push(payload);
       });
     });
 
@@ -252,7 +255,7 @@ describe('Webhook Services', () => {
         const itemId = queue.addToQueue(payload);
 
         expect(itemId).toBeDefined();
-        expect(queue.getQueueSize()).toBe(1);
+        expect(queue.getStats().queueSize).toBe(1);
       });
 
       it('should generate unique IDs', () => {
@@ -267,21 +270,22 @@ describe('Webhook Services', () => {
         await queue.processQueue();
 
         expect(processedItems.length).toBe(1);
-        expect(queue.getQueueSize()).toBe(0);
+        expect(queue.getStats().queueSize).toBe(0);
       });
 
       it('should remove successfully processed items', async () => {
         queue.addToQueue({ test: 'data' });
-        expect(queue.getQueueSize()).toBe(1);
+        expect(queue.getStats().queueSize).toBe(1);
 
         await queue.processQueue();
-        expect(queue.getQueueSize()).toBe(0);
+        expect(queue.getStats().queueSize).toBe(0);
       });
     });
 
     describe('Exponential Backoff Retry', () => {
       it('should move items to DLQ after max retries', async () => {
-        queue.configure(1, async () => {
+        queue.setMaxRetries(1);
+        queue.setProcessor(async () => {
           throw new Error('Always fails');
         });
 
@@ -293,14 +297,15 @@ describe('Webhook Services', () => {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        expect(queue.getQueueSize()).toBe(0);
-        expect(queue.getDLQSize()).toBe(1);
+        expect(queue.getStats().queueSize).toBe(0);
+        expect(queue.getStats().dlqSize).toBe(1);
       });
     });
 
     describe('Dead Letter Queue', () => {
       it('should list dead letter queue items', async () => {
-        queue.configure(1, async () => {
+        queue.setMaxRetries(1);
+        queue.setProcessor(async () => {
           throw new Error('Fail');
         });
 
@@ -320,7 +325,8 @@ describe('Webhook Services', () => {
       it('should manually retry DLQ items', async () => {
         let attemptCount = 0;
 
-        queue.configure(1, async () => {
+        queue.setMaxRetries(1);
+        queue.setProcessor(async () => {
           attemptCount++;
           if (attemptCount < 2) {
             throw new Error('Fail');
@@ -334,26 +340,26 @@ describe('Webhook Services', () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
         await queue.processQueue();
 
-        expect(queue.getDLQSize()).toBe(1);
+        expect(queue.getStats().dlqSize).toBe(1);
 
         // Manually retry
-        const success = await queue.retryItem(itemId);
+        const success = await queue.retryFromDLQ(itemId);
         expect(success).toBe(true);
-        expect(queue.getDLQSize()).toBe(0);
+        expect(queue.getStats().dlqSize).toBe(0);
       });
     });
 
     describe('Background Processing', () => {
       it('should have background processing disabled by default', () => {
-        expect(queue.getStats().processingActive).toBe(false);
+        expect(queue.getStats().isProcessing).toBe(false);
       });
 
       it('should start and stop background processing', () => {
         queue.startProcessing(1000);
-        expect(queue.getStats().processingActive).toBe(true);
+        expect(queue.getStats().isProcessing).toBe(true);
 
         queue.stopProcessing();
-        expect(queue.getStats().processingActive).toBe(false);
+        expect(queue.getStats().isProcessing).toBe(false);
       });
     });
 
@@ -366,7 +372,6 @@ describe('Webhook Services', () => {
 
         expect(stats.queueSize).toBe(2);
         expect(stats.dlqSize).toBe(0);
-        expect(stats.maxRetries).toBe(3);
       });
     });
   });

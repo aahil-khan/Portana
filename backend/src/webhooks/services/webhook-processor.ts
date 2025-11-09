@@ -12,8 +12,10 @@ export interface GitHubPushEvent {
     name: string;
     description?: string;
     language?: string;
+    html_url?: string;
     url?: string;
     topics?: string[];
+    stargazers_count?: number;
   };
   pusher?: { name: string };
   ref?: string;
@@ -29,7 +31,6 @@ export interface MediumArticle {
 
 export class WebhookProcessorService {
   private static instance: WebhookProcessorService;
-  private similarityThreshold = 0.9;
 
   private constructor() {}
 
@@ -48,9 +49,13 @@ export class WebhookProcessorService {
     const repo = event.repository;
     if (!repo) return null;
 
-    const tags: string[] = [];
+    const branch = event.ref?.split('refs/heads/').pop() || 'main';
+    const tags: string[] = ['github'];
     if (repo.language) {
       tags.push(repo.language.toLowerCase());
+    }
+    if (branch && branch !== 'main') {
+      tags.push(branch);
     }
     if (repo.topics && Array.isArray(repo.topics)) {
       tags.push(...repo.topics.map((t: string) => t.toLowerCase()));
@@ -58,13 +63,14 @@ export class WebhookProcessorService {
 
     return {
       name: repo.name,
-      description: repo.description,
-      url: repo.url,
-      tags,
+      description: repo.description || `Repository: ${repo.name}`,
+      url: repo.html_url || repo.url,
+      tags: [...new Set(tags)],
       sourceType: 'github',
       metadata: {
-        branch: event.ref?.split('/').pop(),
+        branch,
         pusher: event.pusher?.name,
+        stars: repo.stargazers_count,
       },
     };
   }
@@ -77,7 +83,7 @@ export class WebhookProcessorService {
     const title = article.title || 'Untitled';
     const truncatedTitle = title.length > 50 ? title.substring(0, 47) + '...' : title;
 
-    const tags: string[] = [];
+    const tags: string[] = ['medium', 'article'];
     if (article.categories && Array.isArray(article.categories)) {
       tags.push(...article.categories.map((c: string) => c.toLowerCase()));
     }
@@ -85,7 +91,7 @@ export class WebhookProcessorService {
     return {
       name: truncatedTitle,
       url: article.link,
-      tags,
+      tags: [...new Set(tags)],
       sourceType: 'medium',
       metadata: {
         fullTitle: title,
@@ -95,11 +101,29 @@ export class WebhookProcessorService {
     };
   }
 
-  checkSimilarity(title1: string, title2: string): boolean {
-    const distance = this.levenshteinDistance(title1.toLowerCase(), title2.toLowerCase());
-    const maxLength = Math.max(title1.length, title2.length);
-    const similarity = (maxLength - distance) / maxLength;
-    return similarity >= this.similarityThreshold;
+  /**
+   * Check if a project with similar name already exists
+   * Uses string similarity check with Levenshtein distance (90% threshold)
+   * Returns the similarity percentage (0-100)
+   */
+  checkSimilarity(title1: string, title2: string): number {
+    const str1 = title1.toLowerCase();
+    const str2 = title2.toLowerCase();
+
+    // Quick checks
+    if (str1 === str2) return 100;
+    if (str1.includes(str2) || str2.includes(str1)) return 90;
+
+    // Calculate character-level similarity using Levenshtein distance
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+
+    if (longer.length === 0) return 100;
+
+    const editDistance = this.levenshteinDistance(longer, shorter);
+    const similarity = ((longer.length - editDistance) / longer.length) * 100;
+
+    return Math.round(similarity);
   }
 
   private levenshteinDistance(a: string, b: string): number {
