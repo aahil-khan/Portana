@@ -5,4 +5,4 @@ export {
   type VectorPoint,
   type SearchResult,
   type QdrantHealthCheck,
-} from './qdrant';
+} from './qdrant.js';

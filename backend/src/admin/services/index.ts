@@ -5,7 +5,7 @@ export {
   type Profile,
   type CreateProfileInput,
   type UpdateProfileInput,
-} from './profile-admin';
+} from './profile-admin.js';
 
 export {
   ProjectAdminService,
@@ -14,11 +14,11 @@ export {
   type Project,
   type CreateProjectInput,
   type UpdateProjectInput,
-} from './project-admin';
+} from './project-admin.js';
 
 export {
   AnalyticsAdminService,
   getAnalyticsAdmin,
   type AnalyticsEvent,
   type AnalyticsMetrics,
-} from './analytics-admin';
+} from './analytics-admin.js';
