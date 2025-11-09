@@ -123,8 +123,8 @@ npm test -- --coverage
 
 ## 📚 Documentation
 
-- **[QUICKSTART.md](./QUICKSTART.md)** - Start here (1 minute)
-- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Full deployment & API docs
+- **[QUICKSTART.md](./docs/QUICKSTART.md)** - Start here (1 minute)
+- **[DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md)** - Full deployment & API docs
 - **[SKIPPED_TESTS_ANALYSIS.md](./docs/SKIPPED_TESTS_ANALYSIS.md)** - Test coverage details
 
 ## 🔐 Environment Variables
