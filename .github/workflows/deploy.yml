@@ -1,42 +1,12 @@
-name: Deploy to Heroku
+name: Deploy
 
 on:
   push:
     branches:
+      - dev
       - main
-      - develop
 
 jobs:
-  deploy-demo:
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      
-      - name: Deploy to Heroku Demo
-        run: |
-          git remote add heroku-demo https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/portfolio-os-demo.git
-          git push heroku-demo develop:main --force
-        continue-on-error: true
-
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      
-      - name: Deploy to Heroku Production
-        run: |
-          git remote add heroku-prod https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/portfolio-os-prod.git
-          git push heroku-prod main:main --force
-        continue-on-error: true
-
   test:
     runs-on: ubuntu-latest
     
@@ -55,9 +25,53 @@ jobs:
       
       - name: Run tests
         working-directory: ./backend
-        run: npm test -- --coverage
-        continue-on-error: true
+        run: npm test --no-coverage
       
       - name: Build TypeScript
         working-directory: ./backend
         run: npm run build
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    needs: test
+    runs-on: self-hosted
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to Home Server (Docker)
+        run: |
+          cd backend
+          docker-compose down
+          docker-compose build --no-cache
+          docker-compose up -d
+      
+      - name: Health Check
+        run: |
+          sleep 10
+          curl -f http://localhost:3000/health || exit 1
+      
+      - name: Log Deployment
+        run: |
+          echo "✅ Dev deployment successful"
+          docker-compose logs backend | head -20
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Deploy to Heroku Production
+        run: |
+          git remote add heroku-prod https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/portfolio-os-prod.git
+          git push heroku-prod main:main --force
+      
+      - name: Heroku Health Check
+        run: |
+          sleep 15
+          curl -f https://portfolio-os-prod.herokuapp.com/api/health || exit 1
