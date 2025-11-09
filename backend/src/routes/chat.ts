@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getChat } from '../chat';
+import { getChat } from '../chat/index.js';
 
 export async function registerChatRoutes(fastify: FastifyInstance): Promise<void> {
   /**

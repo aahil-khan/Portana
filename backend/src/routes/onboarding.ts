@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
-import { getOnboarding } from '../onboarding';
+import { getOnboarding } from '../onboarding/index.js';
 
 export async function onboardingRoutes(app: FastifyInstance) {
   const onboarding = getOnboarding();
