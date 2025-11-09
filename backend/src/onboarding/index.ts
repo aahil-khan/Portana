@@ -12,4 +12,4 @@ export {
   type Step3Data,
   type Step4Data,
   type Step5Data,
-} from './onboarding';
+} from './onboarding.js';
