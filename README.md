@@ -1,4 +1,4 @@
-# Portana Backend
+# Portana
 
 **Open-source AI resume processing API with conversational portfolio interface**
 
