@@ -37,7 +37,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -56,8 +56,8 @@ services:
       test: ['CMD', 'curl', '-f', 'http://localhost:6333/health']
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
 
 volumes:
   qdrant-data:
