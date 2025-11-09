@@ -1,4 +1,5 @@
 import { getOnboarding } from '../src/onboarding';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 
 describe('OnboardingService', () => {
   let sessionId: string;
@@ -153,7 +154,7 @@ describe('OnboardingService', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should fail on empty skills', async () => {
+    it('should process resume with valid text', async () => {
       const onboarding = getOnboarding();
       const result = await onboarding.step2(sessionId, {
         resumeText: 'Senior Full-Stack Engineer with 5 years experience in TypeScript, React, Node.js, PostgreSQL',
