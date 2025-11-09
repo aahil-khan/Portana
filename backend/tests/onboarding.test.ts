@@ -46,7 +46,7 @@ describe('OnboardingService', () => {
       };
       expect(onboarding.getProgress(sessionId)).toBe(20);
 
-      session.step2 = { resumeText: 'Senior Dev with 10 years experience', highlightedSkills: [] };
+      session.step2 = { resumeText: 'Senior Dev with 10 years experience' };
       expect(onboarding.getProgress(sessionId)).toBe(40);
 
       session.step3 = { githubUsername: 'johndoe', mediumUsername: '', githubRepos: [], mediumArticles: [] };
@@ -66,7 +66,7 @@ describe('OnboardingService', () => {
       expect(onboarding.isComplete(sessionId)).toBe(false);
 
       session.step1 = { name: 'John', email: 'john@example.com', bio: 'AI' };
-      session.step2 = { resumeText: 'Senior Dev with years of experience', highlightedSkills: [] };
+      session.step2 = { resumeText: 'Senior Dev with years of experience' };
       session.step3 = { githubUsername: 'johndoe', mediumUsername: '', githubRepos: [], mediumArticles: [] };
       session.step4 = { personaName: 'Alex', personaDescription: 'Expert in technology', tonality: 'technical', responseLength: 'detailed' };
       session.step5 = { deploymentPlatform: 'vercel', apiKey: 'key', webhookUrl: '', allowWebhooks: false };
@@ -137,7 +137,6 @@ describe('OnboardingService', () => {
       const onboarding = getOnboarding();
       const result = await onboarding.step2(sessionId, {
         resumeText: 'Senior Full-Stack Engineer with 5 years experience in TypeScript, React, Node.js, PostgreSQL, cloud infrastructure',
-        highlightedSkills: ['TypeScript', 'React', 'Node.js'],
       });
 
       expect(result.success).toBe(true);
@@ -149,7 +148,6 @@ describe('OnboardingService', () => {
       const onboarding = getOnboarding();
       const result = await onboarding.step2(sessionId, {
         resumeText: 'Short text',
-        highlightedSkills: ['Skill'],
       });
 
       expect(result.success).toBe(false);
@@ -159,10 +157,9 @@ describe('OnboardingService', () => {
       const onboarding = getOnboarding();
       const result = await onboarding.step2(sessionId, {
         resumeText: 'Senior Full-Stack Engineer with 5 years experience in TypeScript, React, Node.js, PostgreSQL',
-        highlightedSkills: [],
       });
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -365,7 +362,6 @@ describe('OnboardingService', () => {
 
       const result2 = await onboarding.step2(sessionId, {
         resumeText: 'Senior engineer with expertise in TypeScript, React, Node.js, databases, cloud infrastructure and modern web technologies',
-        highlightedSkills: ['TypeScript', 'React', 'Node.js'],
       });
       if (!result2.success) {
         console.log('Step2 error:', result2.error);
@@ -416,7 +412,6 @@ describe('OnboardingService', () => {
 
       const result = await onboarding.step2(sessionId, {
         resumeText: 'Senior engineer',
-        highlightedSkills: [],
       });
 
       // Should fail because step1 is required first
