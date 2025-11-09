@@ -101,7 +101,6 @@ backend/
 - `GET /api/webhooks/dlq` - Dead letter queue
 - `POST /api/webhooks/dlq/retry/:id` - Retry failed items
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for full API documentation with examples.
 
 ## 🧪 Testing
 
