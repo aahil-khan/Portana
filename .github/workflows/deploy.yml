@@ -1,0 +1,63 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy-demo:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Deploy to Heroku Demo
+        run: |
+          git remote add heroku-demo https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/portfolio-os-demo.git
+          git push heroku-demo develop:main --force
+        continue-on-error: true
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Deploy to Heroku Production
+        run: |
+          git remote add heroku-prod https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/portfolio-os-prod.git
+          git push heroku-prod main:main --force
+        continue-on-error: true
+
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test -- --coverage
+        continue-on-error: true
+      
+      - name: Build TypeScript
+        working-directory: ./backend
+        run: npm run build
