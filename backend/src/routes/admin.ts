@@ -3,7 +3,7 @@ import {
   getProfileAdmin,
   getProjectAdmin,
   getAnalyticsAdmin,
-} from '../admin/services';
+} from '../admin/services/index.js';
 
 export async function registerAdminRoutes(fastify: FastifyInstance): Promise<void> {
   /**
