@@ -26,7 +26,7 @@ const envSchema = z.object({
   // Optional: Notifications
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
-  DISCORD_WEBHOOK_URL: z.string().url().optional(),
+  DISCORD_WEBHOOK_URL: z.string().url().optional().or(z.literal('')),
 
   // Logging
   LOG_LEVEL: z
