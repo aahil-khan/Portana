@@ -207,110 +207,114 @@ export async function onboardingRoutes(app: FastifyInstance) {
 
   // POST /api/onboarding/upload-resume - Upload and parse resume file
   // Accepts PDF or DOCX files
-  app.post('/api/onboarding/upload-resume', async (request, reply) => {
-    const uploadDir = './uploads';
+  app.post<{ Body: unknown }>(
+    '/api/onboarding/upload-resume',
+    async (request, reply) => {
+      const uploadDir = './uploads';
 
-    // Ensure upload directory exists
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    try {
-      const data = await request.file();
-
-      if (!data) {
-        return reply.code(400).send({
-          success: false,
-          error: 'No file uploaded',
-        });
+      // Ensure upload directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
-
-      const filename = data.filename;
-      const mimetype = data.mimetype;
-      const file = data.file;
-
-      logger.info('Processing uploaded resume', {
-        filename,
-        mimetype,
-      });
-
-      // Validate file type
-      const allowedMimes = [
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-      ];
-
-      if (!allowedMimes.includes(mimetype)) {
-        return reply.code(400).send({
-          success: false,
-          error: `Invalid file type: ${mimetype}. Only PDF and DOCX files are allowed.`,
-        });
-      }
-
-      // Read file buffer
-      const chunks: Buffer[] = [];
-      for await (const chunk of file) {
-        chunks.push(chunk);
-      }
-      const buffer = Buffer.concat(chunks);
-
-      // Create temporary file path
-      const tempFilePath = `${uploadDir}/${Date.now()}-${Math.round(Math.random() * 1e9)}-${filename}`;
-      fs.writeFileSync(tempFilePath, buffer);
 
       try {
-        // Extract text from the file
-        const resumeText = await extractTextFromFile(tempFilePath);
+        // Get the file from multipart form-data
+        const data = await request.file();
 
-        if (!resumeText || resumeText.trim().length === 0) {
+        if (!data) {
           return reply.code(400).send({
             success: false,
-            error: 'Resume file is empty or could not be parsed',
+            error: 'No file uploaded',
           });
         }
 
-        // Parse the resume
-        const parser = getResumeParser();
-        const parsed = await parser.parseResume(resumeText);
+        const filename = data.filename;
+        const mimetype = data.mimetype;
+        const file = data.file;
 
-        logger.info('Resume parsed successfully', {
-          skillsCount: parsed.skills?.length || 0,
-          experienceCount: parsed.experience?.length || 0,
-          educationCount: parsed.education?.length || 0,
+        logger.info('Processing uploaded resume', {
+          filename,
+          mimetype,
         });
 
-        reply.send({
-          success: true,
-          data: parsed,
-          message: 'Resume parsed successfully',
-        });
-      } catch (parseError) {
-        const errorMessage = parseError instanceof Error ? parseError.message : 'Failed to parse resume';
-        logger.error('Resume parsing failed', { error: errorMessage });
+        // Validate file type
+        const allowedMimes = [
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/msword',
+        ];
 
-        reply.code(400).send({
+        if (!allowedMimes.includes(mimetype)) {
+          return reply.code(400).send({
+            success: false,
+            error: `Invalid file type: ${mimetype}. Only PDF and DOCX files are allowed.`,
+          });
+        }
+
+        // Read file buffer
+        const chunks: Buffer[] = [];
+        for await (const chunk of file) {
+          chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+
+        // Create temporary file path
+        const tempFilePath = `${uploadDir}/${Date.now()}-${Math.round(Math.random() * 1e9)}-${filename}`;
+        fs.writeFileSync(tempFilePath, buffer);
+
+        try {
+          // Extract text from the file
+          const resumeText = await extractTextFromFile(tempFilePath);
+
+          if (!resumeText || resumeText.trim().length === 0) {
+            return reply.code(400).send({
+              success: false,
+              error: 'Resume file is empty or could not be parsed',
+            });
+          }
+
+          // Parse the resume
+          const parser = getResumeParser();
+          const parsed = await parser.parseResume(resumeText);
+
+          logger.info('Resume parsed successfully', {
+            skillsCount: parsed.skills?.length || 0,
+            experienceCount: parsed.experience?.length || 0,
+            educationCount: parsed.education?.length || 0,
+          });
+
+          reply.send({
+            success: true,
+            data: parsed,
+            message: 'Resume parsed successfully',
+          });
+        } catch (parseError) {
+          const errorMessage = parseError instanceof Error ? parseError.message : 'Failed to parse resume';
+          logger.error('Resume parsing failed', { error: errorMessage });
+
+          reply.code(400).send({
+            success: false,
+            error: errorMessage,
+          });
+        } finally {
+          // Clean up temporary file
+          try {
+            if (fs.existsSync(tempFilePath)) {
+              fs.unlinkSync(tempFilePath);
+            }
+          } catch (err) {
+            logger.warn('Failed to delete temporary file', { path: tempFilePath });
+          }
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to upload resume';
+        logger.error('Resume upload error', { error: errorMessage });
+
+        reply.code(500).send({
           success: false,
           error: errorMessage,
         });
-      } finally {
-        // Clean up temporary file
-        try {
-          if (fs.existsSync(tempFilePath)) {
-            fs.unlinkSync(tempFilePath);
-          }
-        } catch (err) {
-          logger.warn('Failed to delete temporary file', { path: tempFilePath });
-        }
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload resume';
-      logger.error('Resume upload error', { error: errorMessage });
-
-      reply.code(500).send({
-        success: false,
-        error: errorMessage,
-      });
     }
-  });
+  );
 }
