@@ -10,8 +10,14 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('ResumeParserService');
 
+export interface SkillEntry {
+  name: string;
+  category: 'Programming Language' | 'Frontend Framework' | 'Backend Framework' | 'Database' | 'Cloud' | 'DevOps' | 'Tool' | 'Platform' | 'Other';
+  proficiency?: 'Beginner' | 'Intermediate' | 'Advanced'; // User fills this during review
+}
+
 export interface ExtractedResumeData {
-  skills: string[];
+  skills: SkillEntry[];
   experience: Experience[];
   education: Education[];
   summary: string;
@@ -105,7 +111,12 @@ export class ResumeParserService {
 
 Return a JSON object with this exact structure:
 {
-  "skills": ["skill1", "skill2", ...],
+  "skills": [
+    {
+      "name": "Skill Name",
+      "category": "Programming Language|Frontend Framework|Backend Framework|Database|Cloud|DevOps|Tool|Platform|Other"
+    }
+  ],
   "experience": [
     {
       "title": "Job Title",
@@ -135,12 +146,14 @@ CRITICAL RULES:
 1. Extract ONLY information that is explicitly present in the resume text
 2. Do NOT infer, assume, or hallucinate any information
 3. If a field is not found in the resume, OMIT it entirely (don't use empty strings or null)
-4. For skills: Extract only technical skills, programming languages, frameworks, tools mentioned
-5. Do NOT add generic skills like "Communication" or "Problem Solving" unless explicitly stated
-6. For experience: Include all employment entries with dates and descriptions as provided
-7. For education: Include all degrees/certifications with full details as stated
-8. For duration: Extract dates exactly as found, format as MM/YYYY - MM/YYYY if available
-9. Return valid JSON ONLY, no markdown, no extra text`;
+4. For skills: Extract ALL technical skills mentioned (expect 20-50 total)
+   - Include: Programming languages, frameworks, libraries, tools, platforms, databases, cloud services
+   - Do NOT add generic soft skills like "Communication" or "Problem Solving"
+   - For each skill, assign the most appropriate category
+5. For experience: Include all employment entries with dates and descriptions as provided
+6. For education: Include all degrees/certifications with full details as stated
+7. For duration: Extract dates exactly as found, format as MM/YYYY - MM/YYYY if available
+8. Return valid JSON ONLY, no markdown, no extra text`;
 
         const userPrompt = `Parse this resume and extract ONLY explicitly stated information:\n\n${resumeText}`;
 
@@ -205,9 +218,11 @@ CRITICAL RULES:
   }
 
   /**
-   * Extract just skills from resume (faster, more focused) with retry logic
+   * Extract skills from resume with categories (fast, accurate)
+   * Uses GPT-4o for better categorization accuracy (one-time onboarding cost)
+   * Proficiency levels are filled by user during Step 2 review
    */
-  async extractSkills(resumeText: string): Promise<string[]> {
+  async extractSkills(resumeText: string): Promise<SkillEntry[]> {
     const startTime = Date.now();
 
     if (!resumeText || resumeText.trim().length === 0) {
@@ -230,20 +245,37 @@ CRITICAL RULES:
 
         const modelConfig = getModelConfig('skillsExtraction');
 
-        const systemPrompt = `You are an expert at identifying technical skills from resumes.
-Extract a JSON array of technical skills EXPLICITLY MENTIONED in the resume.
-Return ONLY a valid JSON array of strings, no other text.
-Example: ["Python", "React", "AWS", "PostgreSQL", "Docker"]
+        const systemPrompt = `You are an expert at identifying and categorizing technical skills from resumes.
+Extract ALL technical skills EXPLICITLY MENTIONED in the resume and categorize each one.
 
-RULES:
-1. Extract ONLY skills explicitly stated in the resume
-2. Do NOT infer or add generic skills
-3. Include: Programming languages, frameworks, libraries, tools, platforms, databases, cloud services
-4. Do NOT include soft skills unless explicitly technical (e.g., "Agile" is OK, "Communication" is not)
-5. Each skill should be specific and technical
+Return ONLY a valid JSON array of skill objects, no other text:
+[
+  {
+    "name": "Skill Name",
+    "category": "Category"
+  }
+]
+
+CATEGORIES (pick the most appropriate one):
+- Programming Language (Python, JavaScript, Java, Go, Rust, C++, etc.)
+- Frontend Framework (React, Vue, Angular, Svelte, Next.js, etc.)
+- Backend Framework (Express, Django, FastAPI, Spring, Rails, etc.)
+- Database (PostgreSQL, MongoDB, Redis, MySQL, DynamoDB, etc.)
+- Cloud (AWS, GCP, Azure, Heroku, etc.)
+- DevOps (Docker, Kubernetes, CI/CD, GitHub Actions, Jenkins, etc.)
+- Tool (Git, Linux, Vim, npm, yarn, Webpack, etc.)
+- Platform (iOS, Android, Web, Desktop, etc.)
+- Other (anything that doesn't fit above)
+
+EXTRACTION RULES:
+1. Extract ALL technical skills mentioned in the resume (expect 20-50)
+2. Do NOT infer skills not explicitly stated
+3. Do NOT add generic soft skills (Communication, Problem Solving, etc.)
+4. For each skill, choose the ONE most appropriate category
+5. Keep skill names exactly as they appear in resume
 6. Return ONLY valid JSON array, no markdown`;
 
-        const userPrompt = `Extract ONLY the technical skills explicitly mentioned in this resume:\n\n${resumeText}`;
+        const userPrompt = `Extract ALL technical skills with their categories from this resume:\n\n${resumeText}`;
 
         response = await this.getClient().chat.completions.create({
           ...modelConfig,
@@ -284,10 +316,13 @@ RULES:
       throw new Error('Invalid response format: expected array');
     }
 
-    // Filter and validate skills
+    // Validate and normalize skills
     const validSkills = skills
-      .filter((s: any) => typeof s === 'string' && s.trim().length > 0)
-      .map((s: string) => s.trim());
+      .filter((s: any) => s && typeof s === 'object' && s.name && s.category)
+      .map((s: any) => ({
+        name: String(s.name).trim(),
+        category: String(s.category).trim() as SkillEntry['category'],
+      }));
 
     const duration = Date.now() - startTime;
     logger.info('Skill extraction completed', {

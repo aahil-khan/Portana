@@ -9,7 +9,18 @@
 export const RESUME_ANALYSIS_SCHEMA = {
   type: 'object',
   properties: {
-    skills: { type: 'array', items: { type: 'string' } },
+    skills: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          category: { type: 'string' },
+          proficiency: { type: 'string' }, // Optional, filled by user
+        },
+        required: ['name', 'category'],
+      },
+    },
     experience: {
       type: 'array',
       items: {
@@ -129,8 +140,12 @@ export function validateAIResponse(
   // Validate and normalize skills
   if (Array.isArray(data.skills)) {
     validated.skills = data.skills
-      .filter((skill: any) => typeof skill === 'string' && skill.trim().length > 0)
-      .map((skill: string) => skill.trim());
+      .filter((skill: any) => skill && typeof skill === 'object' && skill.name && skill.category)
+      .map((skill: any) => ({
+        name: String(skill.name).trim(),
+        category: String(skill.category).trim(),
+        proficiency: skill.proficiency ? String(skill.proficiency).trim() : undefined,
+      }));
   } else {
     validated.skills = [];
   }

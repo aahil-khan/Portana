@@ -4,6 +4,7 @@ import { getMemory } from '../services/memory.js';
 import { getRetriever } from '../services/retriever.js';
 import { getEmbedder } from '../services/embedder.js';
 import { getOnboarding } from '../onboarding/index.js';
+import type { SkillEntry } from '../services/resume-parser.js';
 
 // Zod schemas for chat
 export const ChatMessageSchema = z.object({
@@ -32,7 +33,7 @@ export interface ChatContext {
   personaDescription?: string;
   tonality?: string;
   responseLength?: string;
-  userSkills?: string[];
+  userSkills?: SkillEntry[];
   userBio?: string;
 }
 
@@ -171,7 +172,8 @@ export class ChatService {
     }
 
     if (context.userSkills && context.userSkills.length > 0) {
-      prompt += `\nThe user's key skills are: ${context.userSkills.join(', ')}.`;
+      const skillNames = context.userSkills.map(s => s.name).join(', ');
+      prompt += `\nThe user's key skills are: ${skillNames}.`;
     }
 
     // Add retrieved context if available

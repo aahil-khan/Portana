@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getEmbedder } from '../services/embedder.js';
 import { getDeduplicator } from '../services/deduplicator.js';
-import { getResumeParser } from '../services/resume-parser.js';
+import { getResumeParser, type SkillEntry } from '../services/resume-parser.js';
 
 // Zod schemas for each step
 export const Step1Schema = z.object({
@@ -22,7 +22,7 @@ export const Step2ResumeParseSchema = z.object({
 });
 
 export type Step2ParseResult = {
-  skills: string[];
+  skills: SkillEntry[];
   experience: Array<{
     title: string;
     company: string;
@@ -64,7 +64,7 @@ export type Step4Data = z.infer<typeof Step4Schema>;
 export type Step5Data = z.infer<typeof Step5Schema>;
 
 export interface Step2DataParsed extends Step2Data {
-  skills?: string[];
+  skills?: SkillEntry[];
   experience?: Array<{
     title: string;
     company: string;
