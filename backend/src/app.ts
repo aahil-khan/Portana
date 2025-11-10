@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifyRateLimit from '@fastify/rate-limit';
+import fastifyMultipart from '@fastify/multipart';
 import { loadEnv } from './env.js';
 import { registerAdminRoutes } from './routes/admin.js';
 import { registerChatRoutes } from './routes/chat.js';
@@ -61,6 +62,13 @@ export async function createApp(): Promise<FastifyInstance> {
     max: 100,
     timeWindow: '1 minute',
     cache: 10000,
+  });
+
+  // Register multipart plugin for file uploads
+  fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
+    },
   });
 
   // Global error handler
