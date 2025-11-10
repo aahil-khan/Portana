@@ -206,35 +206,49 @@ export async function onboardingRoutes(app: FastifyInstance) {
   });
 
   // POST /api/onboarding/upload-resume - Upload and parse resume file
-  // Accepts PDF or DOCX files
   app.post<{ Body: unknown }>(
     '/api/onboarding/upload-resume',
     async (request, reply) => {
       const uploadDir = './uploads';
 
-      // Ensure upload directory exists
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
       try {
-        // Get the file from multipart form-data
-        const data = await request.file();
+        // Get multipart data iterator
+        const parts = request.parts();
+        let fileData = null;
+        let filename = '';
+        let mimetype = '';
+        const chunks: Buffer[] = [];
 
-        if (!data) {
+        // Iterate through all parts
+        for await (const part of parts) {
+          if (part.type === 'file') {
+            fileData = part;
+            filename = part.filename;
+            mimetype = part.mimetype;
+            
+            // Read the file stream
+            for await (const chunk of part.file) {
+              chunks.push(chunk);
+            }
+            break;
+          }
+        }
+
+        if (!fileData || chunks.length === 0) {
           return reply.code(400).send({
             success: false,
             error: 'No file uploaded',
           });
         }
 
-        const filename = data.filename;
-        const mimetype = data.mimetype;
-        const file = data.file;
-
         logger.info('Processing uploaded resume', {
           filename,
           mimetype,
+          size: chunks.reduce((a, b) => a + b.length, 0),
         });
 
         // Validate file type
@@ -251,14 +265,8 @@ export async function onboardingRoutes(app: FastifyInstance) {
           });
         }
 
-        // Read file buffer
-        const chunks: Buffer[] = [];
-        for await (const chunk of file) {
-          chunks.push(chunk);
-        }
-        const buffer = Buffer.concat(chunks);
-
         // Create temporary file path
+        const buffer = Buffer.concat(chunks);
         const tempFilePath = `${uploadDir}/${Date.now()}-${Math.round(Math.random() * 1e9)}-${filename}`;
         fs.writeFileSync(tempFilePath, buffer);
 
