@@ -12,13 +12,13 @@ export interface ModelConfig {
 
 export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   resumeAnalysis: {
-    model: 'gpt-4o',
-    temperature: 0.2, // Low temperature for consistent parsing
+    model: 'gpt-3.5-turbo',
+    temperature: 0.1, // Very low for deterministic parsing
     max_tokens: 2000,
   },
   skillsExtraction: {
-    model: 'gpt-4o', // Use expensive model for one-time accuracy (onboarding only)
-    temperature: 0.3, // Slightly higher for better categorization reasoning
+    model: 'gpt-3.5-turbo', // Simple, deterministic extraction with taxonomy constraints
+    temperature: 0.1, // Very low for consistency
     max_tokens: 3000, // Allow more tokens for 30-50 skills with categories
   },
   experienceExtraction: {

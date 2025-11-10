@@ -1,36 +1,28 @@
 import OpenAI from 'openai';
 import { getModelConfig, DEFAULT_RETRY_CONFIG, calculateBackoffDelay, isRetryableError } from '../config/ai-models.js';
-import {
-  extractJSON,
-  validateAIResponse,
-  RESUME_ANALYSIS_SCHEMA,
-  extractOpenAIContent,
-} from '../utils/ai-response-schemas.js';
+import { getTaxonomyForPrompt } from '../config/skill-taxonomy.js';
+import { extractJSON, extractOpenAIContent } from '../utils/ai-response-schemas.js';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('ResumeParserService');
 
 export interface SkillEntry {
   name: string;
-  category: 'Programming Language' | 'Frontend Framework' | 'Backend Framework' | 'Database' | 'Cloud' | 'DevOps' | 'Tool' | 'Platform' | 'Other';
-  proficiency?: 'Beginner' | 'Intermediate' | 'Advanced'; // User fills this during review
+  category: string;
+  // Proficiency is NOT extracted by AI - user fills this during Step 2 review
 }
 
 export interface ExtractedResumeData {
   skills: SkillEntry[];
   experience: Experience[];
   education: Education[];
-  summary: string;
-  name?: string;
-  email?: string;
-  phoneNumber?: string;
-  location?: string;
+  summary?: string;
 }
 
 export interface Experience {
   title: string;
   company: string;
-  duration: string;
+  duration?: string;
   description?: string;
   startYear?: number;
   endYear?: number;
@@ -45,10 +37,14 @@ export interface Education {
 
 /**
  * ResumeParserService - Intelligently extracts structured data from resume text
- * - Extracts skills, experience, education with high quality
- * - Retry logic with exponential backoff for reliability
- * - Comprehensive logging for debugging
- * - Schema validation to prevent hallucination
+ * 
+ * KEY DIFFERENCES FROM PREVIOUS APPROACH:
+ * 1. Uses skill taxonomy to prevent hallucination
+ * 2. Makes separate API calls for skills, experience, education (not one big call)
+ * 3. Uses GPT-3.5-Turbo for simpler, more deterministic extraction
+ * 4. Explicitly forbids hallucination in prompts
+ * 5. DOES NOT extract personal info (already collected in Step 1)
+ * 6. DOES NOT extract proficiency levels (user sets during Step 2)
  */
 export class ResumeParserService {
   private openai: OpenAI | null = null;
@@ -79,7 +75,8 @@ export class ResumeParserService {
   }
 
   /**
-   * Parse resume text with retry logic and comprehensive validation
+   * Parse resume text - extract skills, experience, education
+   * Calls separate AI endpoints for each to prevent hallucination
    */
   async parseResume(resumeText: string): Promise<ExtractedResumeData> {
     const startTime = Date.now();
@@ -92,135 +89,44 @@ export class ResumeParserService {
       textLength: resumeText.length,
     });
 
-    let response;
-    let attempts = 0;
-    let lastError: Error | null = null;
+    try {
+      // Make separate calls for each data type to avoid hallucination
+      const [skills, experience, education, summary] = await Promise.all([
+        this.extractSkills(resumeText),
+        this.extractExperience(resumeText),
+        this.extractEducation(resumeText),
+        this.extractSummary(resumeText),
+      ]);
 
-    // Retry loop with exponential backoff
-    while (attempts < DEFAULT_RETRY_CONFIG.maxAttempts) {
-      try {
-        attempts++;
-        logger.info('Calling OpenAI for resume analysis', {
-          attempt: attempts,
-          maxAttempts: DEFAULT_RETRY_CONFIG.maxAttempts,
-        });
+      const result: ExtractedResumeData = {
+        skills,
+        experience,
+        education,
+        summary,
+      };
 
-        const modelConfig = getModelConfig('resumeAnalysis');
+      const duration = Date.now() - startTime;
+      logger.info('Resume parsing completed successfully', {
+        durationMs: duration,
+        skillsCount: skills.length,
+        experienceCount: experience.length,
+        educationCount: education.length,
+      });
 
-        const systemPrompt = `You are an expert resume parser. Extract ONLY information explicitly stated in the provided resume text.
-
-Return a JSON object with this exact structure:
-{
-  "skills": [
-    {
-      "name": "Skill Name",
-      "category": "Programming Language|Frontend Framework|Backend Framework|Database|Cloud|DevOps|Tool|Platform|Other"
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logger.error('Resume parsing failed', {
+        error: error instanceof Error ? error.message : String(error),
+        durationMs: duration,
+      });
+      throw error;
     }
-  ],
-  "experience": [
-    {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "MM/YYYY - MM/YYYY",
-      "description": "Brief description of responsibilities",
-      "startYear": 2020,
-      "endYear": 2022
-    }
-  ],
-  "education": [
-    {
-      "degree": "Degree Type",
-      "institution": "University/School Name",
-      "field": "Field of Study",
-      "graduationYear": 2020
-    }
-  ],
-  "summary": "Professional summary or objective from the resume",
-  "name": "Full Name",
-  "email": "Email address",
-  "phoneNumber": "Phone number",
-  "location": "City, State or Country"
-}
-
-CRITICAL RULES:
-1. Extract ONLY information that is explicitly present in the resume text
-2. Do NOT infer, assume, or hallucinate any information
-3. If a field is not found in the resume, OMIT it entirely (don't use empty strings or null)
-4. For skills: Extract ALL technical skills mentioned (expect 20-50 total)
-   - Include: Programming languages, frameworks, libraries, tools, platforms, databases, cloud services
-   - Do NOT add generic soft skills like "Communication" or "Problem Solving"
-   - For each skill, assign the most appropriate category
-5. For experience: Include all employment entries with dates and descriptions as provided
-6. For education: Include all degrees/certifications with full details as stated
-7. For duration: Extract dates exactly as found, format as MM/YYYY - MM/YYYY if available
-8. Return valid JSON ONLY, no markdown, no extra text`;
-
-        const userPrompt = `Parse this resume and extract ONLY explicitly stated information:\n\n${resumeText}`;
-
-        response = await this.getClient().chat.completions.create({
-          ...modelConfig,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-        });
-
-        break; // Success, exit retry loop
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        const isRetryable = isRetryableError(error);
-
-        logger.warn('OpenAI request failed', {
-          attempt: attempts,
-          maxAttempts: DEFAULT_RETRY_CONFIG.maxAttempts,
-          error: lastError.message,
-          retryable: isRetryable,
-        });
-
-        if (!isRetryable || attempts >= DEFAULT_RETRY_CONFIG.maxAttempts) {
-          throw lastError;
-        }
-
-        // Calculate backoff delay
-        const delayMs = calculateBackoffDelay(attempts);
-        logger.info(`Retrying in ${delayMs}ms...`, { delay: delayMs });
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    }
-
-    if (!response) {
-      throw lastError || new Error('Failed to get response from OpenAI');
-    }
-
-    // Safely extract content from response
-    const jsonText = extractOpenAIContent(response);
-    logger.debug('OpenAI response received', {
-      length: jsonText.length,
-      preview: jsonText.substring(0, 500),
-    });
-
-    // Extract and parse JSON with defensive handling
-    const extracted = extractJSON(jsonText);
-
-    // Validate against schema
-    const validated = validateAIResponse(extracted, RESUME_ANALYSIS_SCHEMA, 'resume analysis');
-
-    const duration = Date.now() - startTime;
-    logger.info('Resume analysis completed successfully', {
-      durationMs: duration,
-      skillsCount: validated.skills?.length || 0,
-      experienceCount: validated.experience?.length || 0,
-      educationCount: validated.education?.length || 0,
-      rawTextLength: resumeText.length,
-    });
-
-    return validated as ExtractedResumeData;
   }
 
   /**
-   * Extract skills from resume with categories (fast, accurate)
-   * Uses GPT-4o for better categorization accuracy (one-time onboarding cost)
-   * Proficiency levels are filled by user during Step 2 review
+   * Extract ALL skills with categories using skill taxonomy
+   * Uses GPT-3.5-Turbo for simpler, more accurate extraction
    */
   async extractSkills(resumeText: string): Promise<SkillEntry[]> {
     const startTime = Date.now();
@@ -235,6 +141,8 @@ CRITICAL RULES:
     let attempts = 0;
     let lastError: Error | null = null;
 
+    const taxonomyForPrompt = getTaxonomyForPrompt();
+
     while (attempts < DEFAULT_RETRY_CONFIG.maxAttempts) {
       try {
         attempts++;
@@ -245,37 +153,28 @@ CRITICAL RULES:
 
         const modelConfig = getModelConfig('skillsExtraction');
 
-        const systemPrompt = `You are an expert at identifying and categorizing technical skills from resumes.
-Extract ALL technical skills EXPLICITLY MENTIONED in the resume and categorize each one.
+        const systemPrompt = `You are an expert at identifying technical skills from resumes.
 
-Return ONLY a valid JSON array of skill objects, no other text:
+Your job: Extract ALL technical skills mentioned in the resume and assign each to one category.
+
+IMPORTANT RULES:
+1. Extract EVERY technical skill mentioned (expect 20-50 skills)
+2. Do NOT infer skills not explicitly stated in the resume
+3. Do NOT add skills the person doesn't actually have
+4. Return ONLY valid JSON array format, no markdown or explanations
+5. If you're unsure about a skill, include it - don't omit it
+6. Keep skill names exactly as they appear in the resume
+
+VALID CATEGORIES (choose ONE for each skill):
+${taxonomyForPrompt}
+
+RESPONSE FORMAT - Return ONLY this JSON array structure:
 [
-  {
-    "name": "Skill Name",
-    "category": "Category"
-  }
-]
+  {"name": "Skill Name", "category": "Category Name"},
+  {"name": "Another Skill", "category": "Another Category"}
+]`;
 
-CATEGORIES (pick the most appropriate one):
-- Programming Language (Python, JavaScript, Java, Go, Rust, C++, etc.)
-- Frontend Framework (React, Vue, Angular, Svelte, Next.js, etc.)
-- Backend Framework (Express, Django, FastAPI, Spring, Rails, etc.)
-- Database (PostgreSQL, MongoDB, Redis, MySQL, DynamoDB, etc.)
-- Cloud (AWS, GCP, Azure, Heroku, etc.)
-- DevOps (Docker, Kubernetes, CI/CD, GitHub Actions, Jenkins, etc.)
-- Tool (Git, Linux, Vim, npm, yarn, Webpack, etc.)
-- Platform (iOS, Android, Web, Desktop, etc.)
-- Other (anything that doesn't fit above)
-
-EXTRACTION RULES:
-1. Extract ALL technical skills mentioned in the resume (expect 20-50)
-2. Do NOT infer skills not explicitly stated
-3. Do NOT add generic soft skills (Communication, Problem Solving, etc.)
-4. For each skill, choose the ONE most appropriate category
-5. Keep skill names exactly as they appear in resume
-6. Return ONLY valid JSON array, no markdown`;
-
-        const userPrompt = `Extract ALL technical skills with their categories from this resume:\n\n${resumeText}`;
+        const userPrompt = `Extract ALL technical skills from this resume:\n\n${resumeText}`;
 
         response = await this.getClient().chat.completions.create({
           ...modelConfig,
@@ -290,7 +189,7 @@ EXTRACTION RULES:
         lastError = error instanceof Error ? error : new Error(String(error));
         const isRetryable = isRetryableError(error);
 
-        logger.warn('Skills extraction failed', {
+        logger.warn('Skills extraction attempt failed', {
           attempt: attempts,
           error: lastError.message,
           retryable: isRetryable,
@@ -309,32 +208,50 @@ EXTRACTION RULES:
       throw lastError || new Error('Failed to get response from OpenAI');
     }
 
-    const jsonText = extractOpenAIContent(response);
-    const skills = extractJSON(jsonText);
+    try {
+      const jsonText = extractOpenAIContent(response);
+      logger.debug('Skills extraction response received', { length: jsonText.length });
 
-    if (!Array.isArray(skills)) {
-      throw new Error('Invalid response format: expected array');
+      const skills = extractJSON(jsonText);
+
+      if (!Array.isArray(skills)) {
+        logger.warn('Skills response is not an array', { type: typeof skills });
+        return [];
+      }
+
+      // Validate and normalize skills
+      const validSkills = skills
+        .filter((s: any) => {
+          const isValid = s && typeof s === 'object' && s.name && s.category;
+          if (!isValid) {
+            logger.debug('Filtered out invalid skill', { skill: s });
+          }
+          return isValid;
+        })
+        .map((s: any) => ({
+          name: String(s.name).trim(),
+          category: String(s.category).trim(),
+        }));
+
+      const duration = Date.now() - startTime;
+      logger.info('Skill extraction completed', {
+        durationMs: duration,
+        skillsExtracted: validSkills.length,
+        totalInResponse: skills.length,
+      });
+
+      return validSkills;
+    } catch (error) {
+      logger.error('Failed to parse skills response', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
-
-    // Validate and normalize skills
-    const validSkills = skills
-      .filter((s: any) => s && typeof s === 'object' && s.name && s.category)
-      .map((s: any) => ({
-        name: String(s.name).trim(),
-        category: String(s.category).trim() as SkillEntry['category'],
-      }));
-
-    const duration = Date.now() - startTime;
-    logger.info('Skill extraction completed', {
-      durationMs: duration,
-      skillsCount: validSkills.length,
-    });
-
-    return validSkills;
   }
 
   /**
-   * Extract just experience from resume with retry logic
+   * Extract work experience entries
+   * Only extracts EXPLICITLY STATED positions
    */
   async extractExperience(resumeText: string): Promise<Experience[]> {
     const startTime = Date.now();
@@ -360,28 +277,28 @@ EXTRACTION RULES:
         const modelConfig = getModelConfig('experienceExtraction');
 
         const systemPrompt = `You are an expert at extracting work experience from resumes.
-Extract a JSON array of work experience EXPLICITLY STATED in the resume.
-Return ONLY a valid JSON array with objects like this:
+
+Your job: Extract ONLY the job positions explicitly listed in the resume.
+
+IMPORTANT RULES:
+1. Extract ONLY work experiences clearly stated in the resume
+2. Do NOT infer positions the person didn't explicitly mention
+3. Include job title, company name, dates, and responsibilities as stated
+4. Do NOT make up companies, dates, or job responsibilities
+5. If dates are missing, use what you can find
+6. Return ONLY valid JSON array, no markdown or explanations
+
+RESPONSE FORMAT:
 [
   {
-    "title": "Job Title exactly as stated",
+    "title": "Job Title as stated",
     "company": "Company Name",
-    "duration": "MM/YYYY - MM/YYYY",
-    "description": "Brief description of responsibilities and achievements",
-    "startYear": 2020,
-    "endYear": 2022
+    "duration": "Start Date - End Date (as found in resume)",
+    "description": "Brief description of what they did (1-2 sentences from resume)"
   }
-]
+]`;
 
-RULES:
-1. Extract ONLY employment entries explicitly listed in the resume
-2. Use dates exactly as provided in the resume
-3. For missing end dates, use current year or "Present"
-4. Do NOT infer positions that are not clearly stated
-5. Order by most recent first if possible
-6. Each description should be 1-2 sentences max`;
-
-        const userPrompt = `Extract ONLY the work experience explicitly mentioned in this resume:\n\n${resumeText}`;
+        const userPrompt = `Extract work experience from this resume:\n\n${resumeText}`;
 
         response = await this.getClient().chat.completions.create({
           ...modelConfig,
@@ -396,7 +313,7 @@ RULES:
         lastError = error instanceof Error ? error : new Error(String(error));
         const isRetryable = isRetryableError(error);
 
-        logger.warn('Experience extraction failed', {
+        logger.warn('Experience extraction attempt failed', {
           attempt: attempts,
           error: lastError.message,
           retryable: isRetryable,
@@ -415,34 +332,232 @@ RULES:
       throw lastError || new Error('Failed to get response from OpenAI');
     }
 
-    const jsonText = extractOpenAIContent(response);
-    const experience = extractJSON(jsonText);
+    try {
+      const jsonText = extractOpenAIContent(response);
+      logger.debug('Experience extraction response received', { length: jsonText.length });
 
-    if (!Array.isArray(experience)) {
-      throw new Error('Invalid response format: expected array');
+      const experience = extractJSON(jsonText);
+
+      if (!Array.isArray(experience)) {
+        logger.warn('Experience response is not an array', { type: typeof experience });
+        return [];
+      }
+
+      // Validate and normalize
+      const validExperience = experience
+        .filter((exp: any) => exp && typeof exp === 'object' && exp.title && exp.company)
+        .map((exp: any) => ({
+          title: String(exp.title).trim(),
+          company: String(exp.company).trim(),
+          duration: exp.duration ? String(exp.duration).trim() : undefined,
+          description: exp.description ? String(exp.description).trim() : undefined,
+        }));
+
+      const duration = Date.now() - startTime;
+      logger.info('Experience extraction completed', {
+        durationMs: duration,
+        experienceExtracted: validExperience.length,
+        totalInResponse: experience.length,
+      });
+
+      return validExperience;
+    } catch (error) {
+      logger.error('Failed to parse experience response', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
-
-    // Validate and normalize experience entries
-    const validExperience = experience
-      .filter((exp: any) => exp && typeof exp === 'object' && (exp.title || exp.role))
-      .map((exp: any) => ({
-        title: String(exp.title || exp.role || 'Position').trim(),
-        company: String(exp.company || 'Company').trim(),
-        duration: String(exp.duration || '').trim(),
-        description: exp.description ? String(exp.description).trim() : undefined,
-        startYear: exp.startYear ? Number(exp.startYear) : undefined,
-        endYear: exp.endYear ? Number(exp.endYear) : undefined,
-      }));
-
-    const duration = Date.now() - startTime;
-    logger.info('Experience extraction completed', {
-      durationMs: duration,
-      experienceCount: validExperience.length,
-    });
-
-    return validExperience;
   }
 
+  /**
+   * Extract education entries
+   * Only extracts EXPLICITLY STATED degrees/certifications
+   */
+  async extractEducation(resumeText: string): Promise<Education[]> {
+    const startTime = Date.now();
+
+    if (!resumeText || resumeText.trim().length === 0) {
+      throw new Error('Resume text is empty');
+    }
+
+    logger.info('Starting education extraction', { textLength: resumeText.length });
+
+    let response;
+    let attempts = 0;
+    let lastError: Error | null = null;
+
+    while (attempts < DEFAULT_RETRY_CONFIG.maxAttempts) {
+      try {
+        attempts++;
+        logger.info('Extracting education', {
+          attempt: attempts,
+          maxAttempts: DEFAULT_RETRY_CONFIG.maxAttempts,
+        });
+
+        const modelConfig = getModelConfig('educationExtraction');
+
+        const systemPrompt = `You are an expert at extracting education from resumes.
+
+Your job: Extract ONLY the education entries explicitly listed in the resume.
+
+IMPORTANT RULES:
+1. Extract ONLY degrees/certifications clearly stated in the resume
+2. Do NOT infer education the person didn't explicitly mention
+3. Include degree, institution, field of study, and graduation year as stated
+4. Do NOT make up schools, degrees, or graduation years
+5. Return ONLY valid JSON array, no markdown or explanations
+
+RESPONSE FORMAT:
+[
+  {
+    "degree": "Bachelor of Science",
+    "institution": "University Name",
+    "field": "Computer Science",
+    "graduationYear": 2020
+  }
+]`;
+
+        const userPrompt = `Extract education from this resume:\n\n${resumeText}`;
+
+        response = await this.getClient().chat.completions.create({
+          ...modelConfig,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+        });
+
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        const isRetryable = isRetryableError(error);
+
+        logger.warn('Education extraction attempt failed', {
+          attempt: attempts,
+          error: lastError.message,
+          retryable: isRetryable,
+        });
+
+        if (!isRetryable || attempts >= DEFAULT_RETRY_CONFIG.maxAttempts) {
+          throw lastError;
+        }
+
+        const delayMs = calculateBackoffDelay(attempts);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+
+    if (!response) {
+      throw lastError || new Error('Failed to get response from OpenAI');
+    }
+
+    try {
+      const jsonText = extractOpenAIContent(response);
+      logger.debug('Education extraction response received', { length: jsonText.length });
+
+      const education = extractJSON(jsonText);
+
+      if (!Array.isArray(education)) {
+        logger.warn('Education response is not an array', { type: typeof education });
+        return [];
+      }
+
+      // Validate and normalize
+      const validEducation = education
+        .filter((edu: any) => edu && typeof edu === 'object' && edu.degree && edu.institution)
+        .map((edu: any) => ({
+          degree: String(edu.degree).trim(),
+          institution: String(edu.institution).trim(),
+          field: edu.field ? String(edu.field).trim() : undefined,
+          graduationYear: edu.graduationYear ? Number(edu.graduationYear) : undefined,
+        }));
+
+      const duration = Date.now() - startTime;
+      logger.info('Education extraction completed', {
+        durationMs: duration,
+        educationExtracted: validEducation.length,
+        totalInResponse: education.length,
+      });
+
+      return validEducation;
+    } catch (error) {
+      logger.error('Failed to parse education response', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }
+  }
+
+  /**
+   * Extract professional summary from resume
+   */
+  async extractSummary(resumeText: string): Promise<string | undefined> {
+    const startTime = Date.now();
+
+    if (!resumeText || resumeText.trim().length === 0) {
+      return undefined;
+    }
+
+    logger.info('Starting summary extraction', { textLength: resumeText.length });
+
+    let response;
+    let attempts = 0;
+    let lastError: Error | null = null;
+
+    while (attempts < DEFAULT_RETRY_CONFIG.maxAttempts) {
+      try {
+        attempts++;
+
+        const modelConfig = getModelConfig('experienceExtraction');
+
+        const systemPrompt = `Extract the professional summary or objective statement from the resume.
+Return ONLY the summary text, no JSON or markdown.
+If no summary is found, return empty string.`;
+
+        const userPrompt = `Extract the professional summary from this resume:\n\n${resumeText}`;
+
+        response = await this.getClient().chat.completions.create({
+          ...modelConfig,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+        });
+
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        const isRetryable = isRetryableError(error);
+
+        if (!isRetryable || attempts >= DEFAULT_RETRY_CONFIG.maxAttempts) {
+          logger.warn('Summary extraction failed', { error: lastError.message });
+          return undefined;
+        }
+
+        const delayMs = calculateBackoffDelay(attempts);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+
+    if (!response) {
+      return undefined;
+    }
+
+    try {
+      const summary = extractOpenAIContent(response).trim();
+      if (summary && summary.length > 0 && summary.toLowerCase() !== 'empty string') {
+        const duration = Date.now() - startTime;
+        logger.info('Summary extraction completed', { durationMs: duration, length: summary.length });
+        return summary;
+      }
+      return undefined;
+    } catch (error) {
+      logger.warn('Failed to extract summary', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return undefined;
+    }
+  }
 }
 
 // Singleton instance

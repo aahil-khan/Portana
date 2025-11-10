@@ -26,7 +26,7 @@ export type Step2ParseResult = {
   experience: Array<{
     title: string;
     company: string;
-    duration: string;
+    duration?: string;
     description?: string;
   }>;
   education: Array<{
@@ -68,7 +68,7 @@ export interface Step2DataParsed extends Step2Data {
   experience?: Array<{
     title: string;
     company: string;
-    duration: string;
+    duration?: string;
     description?: string;
   }>;
   education?: Array<{
