@@ -48,6 +48,7 @@
     "@qdrant/qdrant-js": "^1.15.0",
     "@types/multer": "^2.0.0",
     "@types/pdf-parse": "^1.1.5",
+    "axios": "^1.13.2",
     "better-sqlite3": "^12.4.1",
     "dotenv": "^17.2.3",
     "fastify": "^4.25.2",

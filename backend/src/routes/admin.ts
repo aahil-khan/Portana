@@ -5,6 +5,10 @@ import {
   getAnalyticsAdmin,
 } from '../admin/services/index.js';
 import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
+import { getGitHubIngestor } from '../services/github-ingestor.js';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('AdminRoutes');
 
 export async function registerAdminRoutes(fastify: FastifyInstance): Promise<void> {
   /**
@@ -662,6 +666,89 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to clear logs';
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/ingest/github
+   * Ingest GitHub READMEs for specified repos
+   */
+  fastify.post<{
+    Body: { repos?: string[] };
+  }>('/api/admin/ingest/github', async (request, reply) => {
+    try {
+      const ingestor = getGitHubIngestor();
+      const requestedRepos = (request.body as any)?.repos;
+
+      let repos;
+      if (requestedRepos && Array.isArray(requestedRepos) && requestedRepos.length > 0) {
+        // Parse repo strings like "owner/repo"
+        repos = requestedRepos
+          .map((repoStr: string) => {
+            const [owner, repo] = repoStr.split('/');
+            if (!owner || !repo) return null;
+            return {
+              owner,
+              repo,
+              url: `https://github.com/${owner}/${repo}`,
+            };
+          })
+          .filter((r: any) => r !== null) as Array<{ owner: string; repo: string; url: string }>;
+
+        if (repos.length === 0) {
+          return reply.code(400).send({
+            error: 'Invalid repo format. Use "owner/repo"',
+          });
+        }
+      } else {
+        // Use default repos
+        repos = ingestor.getDefaultRepos();
+      }
+
+      logger.info('Starting GitHub ingestion', { repoCount: repos.length });
+
+      const result = await ingestor.ingestMultipleRepos(repos);
+
+      logger.info('GitHub ingestion complete', {
+        totalChunks: result.totalChunks,
+        totalVectors: result.totalVectors,
+      });
+
+      return reply.code(200).send({
+        success: result.success,
+        message: `Ingested ${result.totalVectors} vectors from ${repos.length} repos`,
+        data: result,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'GitHub ingestion failed';
+      logger.error('GitHub ingestion error', { error: errorMessage });
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/ingest/status
+   * Check GitHub ingestion status
+   */
+  fastify.get('/api/admin/ingest/status', async (_request, reply) => {
+    try {
+      return reply.code(200).send({
+        success: true,
+        status: 'GitHub ingestor ready',
+        lastRun: null, // TODO: Track last run time
+        nextRun: null, // TODO: Schedule periodic ingestion
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to get status';
       return reply.code(500).send({
         success: false,
         error: errorMessage,

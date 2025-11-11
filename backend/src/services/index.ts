@@ -5,3 +5,4 @@ export { MemoryService, getMemory, type Session, type ChatMessage as MemoryChatM
 export { DeduplicatorService, getDeduplicator, type DeduplicationResult, type ContentFingerprint } from './deduplicator.js';
 export { VectorDeduplicator, getVectorDeduplicator, type DedupeEntry } from './vector-deduplicator.js';
 export { ResumeParserService, getResumeParser, type ExtractedResumeData, type Experience, type Education } from './resume-parser.js';
+export { GitHubIngestor, getGitHubIngestor, type GitHubRepo, type ChunkedContent } from './github-ingestor.js';
