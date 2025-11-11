@@ -42,7 +42,7 @@
   "dependencies": {
     "@fastify/cors": "^8.4.2",
     "@fastify/jwt": "^7.1.0",
-    "@fastify/multipart": "^9.3.0",
+    "@fastify/multipart": "^8.3.0",
     "@fastify/rate-limit": "^9.1.0",
     "@qdrant/js-client-rest": "^1.15.1",
     "@qdrant/qdrant-js": "^1.15.0",

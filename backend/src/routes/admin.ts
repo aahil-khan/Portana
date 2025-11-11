@@ -529,4 +529,82 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       },
     });
   });
+
+  /**
+   * GET /api/admin/vectors
+   * Inspect vectors stored in Qdrant (diagnostic endpoint)
+   */
+  fastify.get<{ Querystring: { projectId?: string; type?: string } }>(
+    '/api/admin/vectors',
+    async (_request, reply) => {
+      try {
+        const { getQdrant } = await import('../vector/index.js');
+        const { getVectorDeduplicator } = await import(
+          '../services/vector-deduplicator.js'
+        );
+
+        const qdrant = getQdrant();
+        const dedup = getVectorDeduplicator();
+
+        // Get Qdrant stats
+        const stats = await qdrant.getStats();
+        const dedupStats = dedup.getStats();
+
+        return reply.send({
+          success: true,
+          timestamp: new Date().toISOString(),
+          qdrant: {
+            points_count: stats.points_count,
+            vectors_count: stats.vectors_count,
+            collection_name: 'portfolio_content',
+          },
+          deduplication: {
+            total_entries: dedupStats.totalEntries,
+            total_vectors_tracked: dedupStats.totalVectors,
+            projects_tracked: Array.from(dedupStats.projectsTracked),
+          },
+          message: 'Vector diagnostic data retrieved successfully',
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to get vector stats';
+        return reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  /**
+   * DELETE /api/admin/vectors/:projectId
+   * Clear all vectors for a project
+   */
+  fastify.delete<{ Params: { projectId: string } }>(
+    '/api/admin/vectors/:projectId',
+    async (request, reply) => {
+      try {
+        const { projectId } = request.params;
+        const { getVectorDeduplicator } = await import(
+          '../services/vector-deduplicator.js'
+        );
+
+        const dedup = getVectorDeduplicator();
+        const cleared = await dedup.clearProject(projectId);
+
+        return reply.send({
+          success: true,
+          message: `Cleared ${cleared} vector entries for project ${projectId}`,
+          cleared,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to clear vectors';
+        return reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
 }

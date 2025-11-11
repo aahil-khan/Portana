@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { getEmbedder } from '../services/embedder.js';
+import { getEmbedder, type ProfileStructure } from '../services/embedder.js';
 import { getDeduplicator } from '../services/deduplicator.js';
+import { getVectorDeduplicator } from '../services/vector-deduplicator.js';
 import { getResumeParser, type SkillEntry } from '../services/resume-parser.js';
 
 // Zod schemas for each step
@@ -168,38 +169,56 @@ export class OnboardingService {
         // Still proceed with the raw resume text
       }
 
-      // Embed resume text using embedder service
+      // Embed resume with 3-tier approach + deduplication
       try {
         const embedder = getEmbedder();
+        const vectorDedup = getVectorDeduplicator();
 
-        // Split resume into chunks for embedding
-        const chunks = this.chunkText(data.resumeText, 500);
-        const embeddedChunks = [];
+        // Check if this resume content was already embedded
+        const isDuplicate = await vectorDedup.isDuplicate(sessionId, data.resumeText);
 
-        for (let i = 0; i < chunks.length; i++) {
-          try {
-            embeddedChunks.push({
-              id: `${sessionId}-resume-${i}`,
-              text: chunks[i],
-              projectId: sessionId,
-              source: 'resume',
-              chunkIndex: i,
-              metadata: {
-                skills: parsedData.skills || [],
-                hasExperience: (parsedData.experience?.length || 0) > 0,
-              },
-            });
-          } catch (error) {
-            console.warn(`Failed to embed chunk ${i}:`, error);
-          }
-        }
+        if (!isDuplicate) {
+          // Build profile structure for 3-tier embeddings
+          const profile: ProfileStructure = {
+            skills: parsedData.skills || [],
+            experience: parsedData.experience?.map((e) => ({
+              title: e.title,
+              company: e.company,
+              duration: e.duration,
+            })) || [],
+            education: parsedData.education?.map((e) => ({
+              degree: e.degree,
+              institution: e.institution,
+            })) || [],
+          };
 
-        if (embeddedChunks.length > 0) {
-          await embedder.embedAndUpsert(embeddedChunks);
+          // Embed using 3-tier approach
+          const vectorCount = await embedder.embedProfile3Tier(
+            sessionId,
+            profile,
+            data.resumeText
+          );
+
+          // Register in dedup tracker
+          const vectorIds = [
+            ...profile.skills.map((s) => `${sessionId}-skill-${s.name.toLowerCase().replace(/\s+/g, '-')}`),
+            ...profile.experience.map((_, i) => `${sessionId}-experience-${i}`),
+            ...this.chunkText(data.resumeText, 500).map((_, i) => `${sessionId}-resume-chunk-${i}`),
+          ];
+
+          vectorDedup.registerEmbedded(sessionId, data.resumeText, vectorIds);
+
+          console.log(
+            `[Onboarding Step 2] Successfully embedded resume (${vectorCount} vectors, dedup registered)`
+          );
+        } else {
+          console.log(
+            `[Onboarding Step 2] Resume already embedded for ${sessionId}, skipping duplicate embedding`
+          );
         }
       } catch (error) {
-        // Gracefully handle embedding errors in non-production environments
-        console.warn('Embedding service unavailable:', error);
+        // Gracefully handle embedding errors
+        console.warn(`[Onboarding Step 2] Embedding service unavailable:`, error);
       }
 
       session.step2 = parsedData;

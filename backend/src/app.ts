@@ -139,6 +139,11 @@ export async function startServer(app: FastifyInstance): Promise<void> {
   const env = loadEnv();
 
   try {
+    // Initialize Qdrant vector database
+    const { initializeQdrant } = await import('./vector/index.js');
+    await initializeQdrant(env.QDRANT_URL, env.QDRANT_API_KEY);
+    app.log.info('✓ Qdrant vector database initialized');
+
     // Register all routes
     await registerAdminRoutes(app);
     await registerChatRoutes(app);

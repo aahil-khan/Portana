@@ -25,6 +25,24 @@ export interface EmbeddedContent {
   metadata?: Record<string, unknown>;
 }
 
+// Structured data for 3-tier vector approach
+export interface SkillVector {
+  name: string;
+  category: string;
+}
+
+export interface ExperienceVector {
+  title: string;
+  company: string;
+  duration?: string;
+}
+
+export interface ProfileStructure {
+  skills: SkillVector[];
+  experience: ExperienceVector[];
+  education: Array<{ degree: string; institution: string }>;
+}
+
 export class EmbedderService {
   private client: OpenAI | null = null;
   private model: string;
@@ -138,6 +156,127 @@ export class EmbedderService {
         `Failed to embed and upsert: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+  }
+
+  /**
+   * 3-Tier Vector Approach:
+   * Tier 1: Structured Skills (each skill as vector)
+   * Tier 2: Structured Experience (each role as vector)
+   * Tier 3: Resume Chunks (for semantic search)
+   */
+  async embedProfile3Tier(
+    projectId: string,
+    profile: ProfileStructure,
+    resumeText: string
+  ): Promise<number> {
+    try {
+      const qdrant = getQdrant();
+      const points: VectorPoint[] = [];
+
+      // Tier 1: Embed each skill individually
+      const skillTexts = profile.skills.map(
+        (s) => `${s.name} (${s.category})`
+      );
+      if (skillTexts.length > 0) {
+        const skillEmbeddings = await this.embedBatch(skillTexts);
+        profile.skills.forEach((skill, idx) => {
+          points.push({
+            id: `${projectId}-skill-${skill.name.toLowerCase().replace(/\s+/g, '-')}`,
+            vector: skillEmbeddings[idx],
+            payload: {
+              type: 'skill',
+              projectId,
+              skill: skill.name,
+              category: skill.category,
+              source: 'resume',
+              createdAt: new Date().toISOString(),
+              // Reference-based: no full data
+              _dbRef: `skill:${skill.name}`,
+            },
+          });
+        });
+      }
+
+      // Tier 2: Embed each experience entry
+      const experienceTexts = profile.experience.map(
+        (e) => `${e.title} at ${e.company}${e.duration ? ` (${e.duration})` : ''}`
+      );
+      if (experienceTexts.length > 0) {
+        const expEmbeddings = await this.embedBatch(experienceTexts);
+        profile.experience.forEach((exp, idx) => {
+          points.push({
+            id: `${projectId}-experience-${idx}`,
+            vector: expEmbeddings[idx],
+            payload: {
+              type: 'experience',
+              projectId,
+              title: exp.title,
+              company: exp.company,
+              duration: exp.duration,
+              source: 'resume',
+              createdAt: new Date().toISOString(),
+              // Reference-based
+              _dbRef: `experience:${projectId}:${idx}`,
+            },
+          });
+        });
+      }
+
+      // Tier 3: Embed resume chunks for semantic search
+      const chunks = this.chunkText(resumeText, 500);
+      const chunkTexts = chunks.filter((c) => c.trim().length > 0);
+      if (chunkTexts.length > 0) {
+        const chunkEmbeddings = await this.embedBatch(chunkTexts);
+        chunkTexts.forEach((chunk, idx) => {
+          points.push({
+            id: `${projectId}-resume-chunk-${idx}`,
+            vector: chunkEmbeddings[idx],
+            payload: {
+              type: 'resume_chunk',
+              projectId,
+              chunkIndex: idx,
+              source: 'resume',
+              createdAt: new Date().toISOString(),
+              // Store only reference, not full text
+              _dbRef: `resume_chunk:${projectId}:${idx}`,
+              _textPreview: chunk.substring(0, 100), // Preview only
+            },
+          });
+        });
+      }
+
+      // Upsert all points at once
+      if (points.length > 0) {
+        await qdrant.upsert(points);
+        console.log(
+          `[Embedder] Upserted ${points.length} vectors (${profile.skills.length} skills, ${profile.experience.length} exp, ${chunkTexts.length} chunks)`
+        );
+      }
+
+      return points.length;
+    } catch (error) {
+      throw new Error(
+        `Failed to embed profile 3-tier: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  /**
+   * Chunk text into overlapping segments
+   */
+  private chunkText(text: string, chunkSize: number, overlap: number = 100): string[] {
+    const chunks: string[] = [];
+    let start = 0;
+
+    while (start < text.length) {
+      const end = Math.min(start + chunkSize, text.length);
+      chunks.push(text.substring(start, end));
+      start += chunkSize - overlap;
+    }
+
+    return chunks;
   }
 
   async getUsage(): Promise<{ model: string; dimensions: number }> {
