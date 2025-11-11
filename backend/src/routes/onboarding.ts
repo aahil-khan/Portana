@@ -101,12 +101,22 @@ export async function onboardingRoutes(app: FastifyInstance) {
   // ORIGINAL ENDPOINTS (Production flow)
   // ============================================================================
 
-  // POST /api/onboarding/start - Initialize onboarding
-  app.post('/api/onboarding/start', async (_request, reply) => {
+  // POST /api/onboarding/start - Initialize onboarding with Step 1 data
+  app.post<{ Body: any }>('/api/onboarding/start', async (request, reply) => {
     try {
       const userId = uuidv4();
       const sessionToken = uuidv4(); // In production, this should be a JWT token
       onboarding.createSession(userId);
+
+      // Process Step 1 data if provided
+      const step1Data = request.body as any;
+      if (step1Data && Object.keys(step1Data).length > 0) {
+        const result = await onboarding.step1(userId, step1Data);
+        if (!result.success) {
+          logger.warn('Step 1 validation warning', { error: result.error });
+          // Continue anyway - not a critical failure
+        }
+      }
 
       reply.code(201).send({
         success: true,
@@ -115,9 +125,11 @@ export async function onboardingRoutes(app: FastifyInstance) {
         message: 'Onboarding started',
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start onboarding';
+      logger.error('Start onboarding error', { error: errorMessage });
       reply.code(500).send({
         success: false,
-        error: 'Failed to start onboarding',
+        error: errorMessage,
       });
     }
   });
