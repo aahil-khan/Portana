@@ -325,4 +325,446 @@ export async function onboardingRoutes(app: FastifyInstance) {
       }
     }
   );
+
+  // ============================================================================
+  // CHECKPOINT & FINALIZE ENDPOINTS (Hybrid Approach)
+  // ============================================================================
+
+  // POST /api/onboarding/:sessionId/checkpoint - Save partial progress
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/checkpoint',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+        const { step, data } = request.body as { step: number; data: any };
+
+        if (!step || !data) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Missing step or data in checkpoint',
+          });
+        }
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          return reply.code(404).send({
+            success: false,
+            error: 'Session not found',
+          });
+        }
+
+        // Save the specific step data
+        const stepKey = `step${step}` as keyof typeof session;
+        (session as any)[stepKey] = data;
+        onboarding.updateSession(sessionId, session);
+
+        logger.info(`Checkpoint saved for ${sessionId}`, { step });
+
+        reply.send({
+          success: true,
+          message: `Step ${step} checkpoint saved`,
+          progress: onboarding.getProgress(sessionId),
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Checkpoint failed';
+        logger.error('Checkpoint error', { error: errorMessage });
+
+        reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // GET /api/onboarding/:sessionId/checkpoint-resume - Get last checkpoint
+  app.get<{ Params: { sessionId: string } }>(
+    '/api/onboarding/:sessionId/checkpoint-resume',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          return reply.code(404).send({
+            success: false,
+            error: 'Session not found',
+          });
+        }
+
+        const progress = onboarding.getProgress(sessionId);
+        const lastCompletedStep = typeof progress === 'number' ? 0 : (progress as any).completed || 0;
+
+        reply.send({
+          success: true,
+          sessionId,
+          lastCompletedStep,
+          data: {
+            step1: session.step1 || null,
+            step2: session.step2 || null,
+            step3: session.step3 || null,
+            step4: session.step4 || null,
+            step5: session.step5 || null,
+          },
+          message: `Can resume from step ${lastCompletedStep + 1}`,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to retrieve checkpoint';
+        logger.error('Checkpoint resume error', { error: errorMessage });
+
+        reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // POST /api/onboarding/:sessionId/finalize - Process all steps + embed + deploy
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/finalize',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+        const { step1, step2, step3, step4, step5 } = request.body as {
+          step1?: any;
+          step2?: any;
+          step3?: any;
+          step4?: any;
+          step5?: any;
+        };
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          return reply.code(404).send({
+            success: false,
+            error: 'Session not found',
+          });
+        }
+
+        // Validate all steps are provided
+        if (!step1 || !step2 || !step3 || !step4 || !step5) {
+          return reply.code(400).send({
+            success: false,
+            error: 'All 5 steps required for finalization',
+            missing: {
+              step1: !step1,
+              step2: !step2,
+              step3: !step3,
+              step4: !step4,
+              step5: !step5,
+            },
+          });
+        }
+
+        // Process each step in sequence
+        logger.info('Starting finalization for session', { sessionId });
+
+        // Step 1
+        let result1 = await onboarding.step1(sessionId, step1);
+        if (!result1.success) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Step 1 validation failed',
+            details: result1.error,
+          });
+        }
+
+        // Step 2
+        let result2 = await onboarding.step2(sessionId, step2);
+        if (!result2.success) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Step 2 validation failed',
+            details: result2.error,
+          });
+        }
+
+        // Step 3
+        let result3 = await onboarding.step3(sessionId, step3);
+        if (!result3.success) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Step 3 validation failed',
+            details: result3.error,
+          });
+        }
+
+        // Step 4
+        let result4 = await onboarding.step4(sessionId, step4);
+        if (!result4.success) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Step 4 validation failed',
+            details: result4.error,
+          });
+        }
+
+        // Step 5
+        let result5 = await onboarding.step5(sessionId, step5);
+        if (!result5.success) {
+          return reply.code(400).send({
+            success: false,
+            error: 'Step 5 validation failed',
+            details: result5.error,
+          });
+        }
+
+        // Mark as complete
+        const finalSession = onboarding.getSession(sessionId);
+        if (finalSession) {
+          finalSession.completedAt = Date.now();
+          onboarding.updateSession(sessionId, finalSession);
+        }
+
+        logger.info('Finalization completed successfully', { sessionId });
+
+        reply.send({
+          success: true,
+          message: 'Onboarding finalized successfully! Your portfolio AI is ready.',
+          sessionId,
+          completed: true,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Finalization failed';
+        logger.error('Finalization error', { error: errorMessage });
+
+        reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // DELETE /api/onboarding/:sessionId - Delete session and cleanup
+  app.delete<{ Params: { sessionId: string } }>(
+    '/api/onboarding/:sessionId',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          return reply.code(404).send({
+            success: false,
+            error: 'Session not found',
+          });
+        }
+
+        // Clean up vectors from this session
+        try {
+          const { getVectorDeduplicator } = await import('../services/vector-deduplicator.js');
+          const vectorDedup = getVectorDeduplicator();
+          vectorDedup.clearProject(sessionId);
+          logger.info('Vectors cleaned up for session', { sessionId });
+        } catch (err) {
+          logger.warn('Failed to cleanup vectors', { error: err });
+        }
+
+        // Delete session
+        onboarding.deleteSession(sessionId);
+
+        logger.info('Session deleted', { sessionId });
+
+        reply.send({
+          success: true,
+          message: 'Session deleted successfully',
+          sessionId,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Deletion failed';
+        logger.error('Session deletion error', { error: errorMessage });
+
+        reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // ============================================================================
+  // TEST ENDPOINTS (Development - allow testing individual steps in isolation)
+  // ============================================================================
+
+  // POST /api/onboarding/:sessionId/test/step/1 - Test step 1 independently
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/test/step/1',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          onboarding.createSession(sessionId);
+        }
+
+        const result = await onboarding.step1(sessionId, request.body as any);
+
+        if (!result.success) {
+          return reply.code(400).send({
+            success: false,
+            error: result.error,
+          });
+        }
+
+        reply.send({
+          success: true,
+          message: 'Step 1 test completed',
+          data: request.body,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Test step 1 failed';
+        reply.code(400).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // POST /api/onboarding/:sessionId/test/step/2 - Test step 2 independently
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/test/step/2',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          onboarding.createSession(sessionId);
+        }
+
+        const result = await onboarding.step2(sessionId, request.body as any);
+
+        if (!result.success) {
+          return reply.code(400).send({
+            success: false,
+            error: result.error,
+          });
+        }
+
+        reply.send({
+          success: true,
+          message: 'Step 2 test completed',
+          parsed: result.parsed,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Test step 2 failed';
+        reply.code(400).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // POST /api/onboarding/:sessionId/test/step/3 - Test step 3 independently
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/test/step/3',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          onboarding.createSession(sessionId);
+        }
+
+        const result = await onboarding.step3(sessionId, request.body as any);
+
+        if (!result.success) {
+          return reply.code(400).send({
+            success: false,
+            error: result.error,
+          });
+        }
+
+        reply.send({
+          success: true,
+          message: 'Step 3 test completed',
+          data: request.body,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Test step 3 failed';
+        reply.code(400).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // POST /api/onboarding/:sessionId/test/step/4 - Test step 4 independently
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/test/step/4',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          onboarding.createSession(sessionId);
+        }
+
+        const result = await onboarding.step4(sessionId, request.body as any);
+
+        if (!result.success) {
+          return reply.code(400).send({
+            success: false,
+            error: result.error,
+          });
+        }
+
+        reply.send({
+          success: true,
+          message: 'Step 4 test completed',
+          data: request.body,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Test step 4 failed';
+        reply.code(400).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // POST /api/onboarding/:sessionId/test/step/5 - Test step 5 independently
+  app.post<{ Params: { sessionId: string }; Body: any }>(
+    '/api/onboarding/:sessionId/test/step/5',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        const session = onboarding.getSession(sessionId);
+        if (!session) {
+          onboarding.createSession(sessionId);
+        }
+
+        const result = await onboarding.step5(sessionId, request.body as any);
+
+        if (!result.success) {
+          return reply.code(400).send({
+            success: false,
+            error: result.error,
+          });
+        }
+
+        reply.send({
+          success: true,
+          message: 'Step 5 test completed',
+          data: request.body,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Test step 5 failed';
+        reply.code(400).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
 }

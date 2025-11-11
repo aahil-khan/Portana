@@ -324,6 +324,14 @@ export class OnboardingService {
     return Math.round((steps / 5) * 100);
   }
 
+  updateSession(sessionId: string, session: OnboardingSession): void {
+    this.sessions.set(sessionId, session);
+  }
+
+  deleteSession(sessionId: string): void {
+    this.sessions.delete(sessionId);
+  }
+
   private chunkText(text: string, chunkSize: number): string[] {
     const chunks: string[] = [];
     for (let i = 0; i < text.length; i += chunkSize) {
