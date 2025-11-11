@@ -9,9 +9,9 @@ export const Step1Schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email'),
   bio: z.string().max(500, 'Bio too long').optional(),
-  website: z.string().url('Invalid URL').optional(),
-  githubUrl: z.string().url('Invalid GitHub URL').optional(),
-  linkedinUrl: z.string().url('Invalid LinkedIn URL').optional(),
+  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  githubUrl: z.string().url('Invalid GitHub URL').optional().or(z.literal('')),
+  linkedinUrl: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
 });
 
 export const Step2Schema = z.object({
