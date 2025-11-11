@@ -4,6 +4,7 @@ import {
   getProjectAdmin,
   getAnalyticsAdmin,
 } from '../admin/services/index.js';
+import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
 
 export async function registerAdminRoutes(fastify: FastifyInstance): Promise<void> {
   /**
@@ -607,4 +608,64 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       }
     }
   );
+
+  /**
+   * GET /api/admin/logs
+   * Retrieve recent application logs
+   */
+  fastify.get<{ Querystring: { limit?: string; level?: string } }>(
+    '/api/admin/logs',
+    async (request, reply) => {
+      try {
+        const limit = Math.min(parseInt(request.query.limit || '100'), 500);
+        const level = request.query.level as string | undefined;
+
+        let logs = getLogBuffer();
+
+        // Filter by level if specified
+        if (level) {
+          logs = logs.filter((log) => log.level === level);
+        }
+
+        // Get last N entries
+        logs = logs.slice(-limit);
+
+        return reply.send({
+          success: true,
+          timestamp: new Date().toISOString(),
+          count: logs.length,
+          logs,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to retrieve logs';
+        return reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  /**
+   * DELETE /api/admin/logs
+   * Clear log buffer
+   */
+  fastify.delete('/api/admin/logs', async (_request, reply) => {
+    try {
+      clearLogBuffer();
+
+      return reply.send({
+        success: true,
+        message: 'Log buffer cleared successfully',
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to clear logs';
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
 }

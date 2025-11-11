@@ -106,17 +106,35 @@ export async function onboardingRoutes(app: FastifyInstance) {
     try {
       const userId = uuidv4();
       const sessionToken = uuidv4(); // In production, this should be a JWT token
+      
+      logger.info('Creating session', { userId });
       onboarding.createSession(userId);
 
       // Process Step 1 data if provided
       const step1Data = request.body as any;
+      logger.info('Received Step 1 data', { 
+        dataKeys: Object.keys(step1Data || {}),
+        dataLength: Object.keys(step1Data || {}).length,
+        step1Data: JSON.stringify(step1Data)
+      });
+
       if (step1Data && Object.keys(step1Data).length > 0) {
+        logger.info('Processing Step 1 data for session', { userId });
         const result = await onboarding.step1(userId, step1Data);
+        logger.info('Step 1 result', { success: result.success, error: result.error });
+        
         if (!result.success) {
           logger.warn('Step 1 validation warning', { error: result.error });
           // Continue anyway - not a critical failure
         }
+      } else {
+        logger.warn('No Step 1 data provided', { step1Data });
       }
+
+      logger.info('Session after Step 1 processing', { 
+        sessionId: userId,
+        session: JSON.stringify(onboarding.getSession(userId))
+      });
 
       reply.code(201).send({
         success: true,

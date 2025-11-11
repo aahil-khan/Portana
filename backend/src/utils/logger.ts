@@ -13,6 +13,26 @@ export interface LogContext {
   [key: string]: any;
 }
 
+export interface LogEntry {
+  timestamp: string;
+  level: LogLevel;
+  component: string;
+  message: string;
+  context?: LogContext;
+}
+
+// Global log buffer (keep last 500 entries)
+const logBuffer: LogEntry[] = [];
+const MAX_LOG_ENTRIES = 500;
+
+export function getLogBuffer(): LogEntry[] {
+  return [...logBuffer];
+}
+
+export function clearLogBuffer(): void {
+  logBuffer.length = 0;
+}
+
 export class Logger {
   constructor(private name: string) {}
 
@@ -34,6 +54,20 @@ export class Logger {
       case 'error':
         console.error(logMessage);
         break;
+    }
+
+    // Add to buffer
+    logBuffer.push({
+      timestamp,
+      level,
+      component: this.name,
+      message,
+      context,
+    });
+
+    // Keep buffer size manageable
+    if (logBuffer.length > MAX_LOG_ENTRIES) {
+      logBuffer.shift();
     }
   }
 
