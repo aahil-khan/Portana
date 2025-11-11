@@ -11,6 +11,96 @@ const logger = createLogger('OnboardingRoutes');
 export async function onboardingRoutes(app: FastifyInstance) {
   const onboarding = getOnboarding();
 
+  // ============================================================================
+  // DIAGNOSTIC ENDPOINTS (For debugging/testing)
+  // ============================================================================
+
+  // GET /api/onboarding/:sessionId/debug - Inspect session state
+  app.get<{ Params: { sessionId: string } }>(
+    '/api/onboarding/:sessionId/debug',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+        const session = onboarding.getSession(sessionId);
+
+        if (!session) {
+          return reply.code(404).send({
+            error: 'Session not found',
+          });
+        }
+
+        reply.send({
+          success: true,
+          sessionId,
+          createdAt: new Date(session.createdAt).toISOString(),
+          completedAt: session.completedAt ? new Date(session.completedAt).toISOString() : null,
+          data: {
+            step1: session.step1 || null,
+            step2: session.step2
+              ? {
+                  resumeText: session.step2.resumeText?.substring(0, 100) + '...' || '(empty)',
+                  skillsCount: session.step2.skills?.length || 0,
+                  experienceCount: session.step2.experience?.length || 0,
+                  educationCount: session.step2.education?.length || 0,
+                  skills: session.step2.skills || [],
+                  experience: session.step2.experience || [],
+                  education: session.step2.education || [],
+                }
+              : null,
+            step3: session.step3 || null,
+            step4: session.step4 || null,
+            step5: session.step5 || null,
+          },
+          progress: {
+            percentComplete: onboarding.getProgress(sessionId),
+            isComplete: onboarding.isComplete(sessionId),
+            completedSteps: {
+              step1: !!session.step1,
+              step2: !!session.step2,
+              step3: !!session.step3,
+              step4: !!session.step4,
+              step5: !!session.step5,
+            },
+          },
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Debug endpoint failed';
+        logger.error('Debug error', { error: errorMessage });
+        reply.code(500).send({
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // GET /api/onboarding/:sessionId/debug/vectors - Inspect vectors for session
+  app.get<{ Params: { sessionId: string } }>(
+    '/api/onboarding/:sessionId/debug/vectors',
+    async (request, reply) => {
+      try {
+        const { sessionId } = request.params;
+
+        // Try to fetch from Qdrant (this would require access to qdrant manager)
+        // For now, just return empty - you can call the manual endpoint instead
+        reply.send({
+          success: true,
+          sessionId,
+          message: 'Use GET /api/admin/vectors to see all vectors across all sessions',
+          instructions: 'Call curl http://localhost:3200/api/admin/vectors to inspect Qdrant',
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Vector debug failed';
+        reply.code(500).send({
+          error: errorMessage,
+        });
+      }
+    }
+  );
+
+  // ============================================================================
+  // ORIGINAL ENDPOINTS (Production flow)
+  // ============================================================================
+
   // POST /api/onboarding/start - Initialize onboarding
   app.post('/api/onboarding/start', async (_request, reply) => {
     try {
