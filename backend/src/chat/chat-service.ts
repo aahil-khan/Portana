@@ -143,28 +143,74 @@ export class ChatService {
   }
 
   /**
-   * Build system prompt - hardcoded for Aahil's portfolio
+   * Build system prompt - returns JSON formatted responses for frontend consumption
+   * Supports three response types: text, command, hybrid
    */
-  private buildSystemPrompt(_context: ChatContext, retrievedContext: string): string {
-    // Add retrieved context with clear markers and strict instructions
+  private buildSystemPrompt(_context: ChatContext, retrievedContext: string, userMessage: string): string {
+    const responseFormat = `
+RESPONSE FORMAT - YOU MUST RESPOND AS VALID JSON ONLY (no markdown, no explanations):
+
+If this is a natural language question:
+{
+  "type": "text",
+  "content": "Your conversational response...",
+  "citations": [
+    { "source": "Resume: Experience", "snippet": "..." }
+  ]
+}
+
+If this looks like a command-like question (e.g., "show me projects", "what's your tech stack"):
+{
+  "type": "hybrid",
+  "content": "Your response...",
+  "suggestedCommand": "projects",
+  "showSuggestion": true
+}
+
+For generic knowledge questions:
+{
+  "type": "text",
+  "content": "Your answer...",
+  "citations": []
+}
+`;
+
     if (retrievedContext && retrievedContext.trim().length > 0) {
       return `You are Aahil Khan's AI portfolio assistant. Your ONLY job is to answer questions based on the knowledge base below.
+
+${responseFormat}
 
 CRITICAL RULES:
 1. ONLY use information from the knowledge base section below
 2. DO NOT make up experiences, projects, or skills not in the knowledge base
-3. If asked something not in the knowledge base, say "I don't have that information" 
-4. ALWAYS cite the source when referencing specific items
+3. If asked something not in the knowledge base, include it in response with empty citations
+4. ALWAYS include citations array even if empty
 5. Be conversational but accurate
+6. Detect command-like patterns and use "hybrid" type with suggestedCommand
+7. For hybrid responses, suggest appropriate command: "projects", "stack", "experience", "blog", "timeline", or "misc"
+8. RESPOND ONLY WITH VALID JSON - no markdown formatting, no code blocks, no explanations
 
 KNOWLEDGE BASE:
 ${retrievedContext}
 
-Now answer the user's question using ONLY the information above. If the answer isn't in the knowledge base, say you don't have that information.`;
+User message: "${userMessage}"
+
+Analyze the user message and respond ONLY as JSON using the formats above.`;
     } else {
       return `You are Aahil Khan's AI portfolio assistant. Unfortunately, no relevant information was found to answer this question.
 
-Be honest: "I don't have information about that in my knowledge base. You might want to check Aahil's GitHub or other projects directly."`;
+${responseFormat}
+
+Respond with:
+{
+  "type": "text",
+  "content": "I don't have information about that in my knowledge base. You might want to check Aahil's GitHub or other projects directly.",
+  "citations": []
+}
+
+User message: "${userMessage}"
+
+Respond ONLY with valid JSON.`;
     }
   }
 
@@ -237,7 +283,7 @@ Be honest: "I don't have information about that in my knowledge base. You might 
       const history = await this.getMessageHistory(sessionId);
 
       // Build system prompt
-      const systemPrompt = this.buildSystemPrompt(context, retrievedContext);
+      const systemPrompt = this.buildSystemPrompt(context, retrievedContext, message);
 
       // Prepare messages for OpenAI
       const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -309,7 +355,7 @@ Be honest: "I don't have information about that in my knowledge base. You might 
       const history = await this.getMessageHistory(sessionId);
 
       // Build system prompt
-      const systemPrompt = this.buildSystemPrompt(context, retrievedContext);
+      const systemPrompt = this.buildSystemPrompt(context, retrievedContext, message);
 
       // Prepare messages for OpenAI
       const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
