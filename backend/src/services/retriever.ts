@@ -23,7 +23,7 @@ export interface RerankingConfig {
 
 export class RetrieverService {
   private defaultTopK = 10;
-  private scoreThreshold = 0.5;
+  private scoreThreshold = 0.3; // Lowered from 0.5 to catch more relevant results
 
   async retrieveByVector(
     queryVector: number[],

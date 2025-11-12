@@ -126,8 +126,8 @@ export class ChatService {
       // Embed the message
       const messageVector = await embedder.embedText(message);
 
-      // Search for relevant content
-      const results = await retriever.retrieveByVector(messageVector, 3);
+      // Search for relevant content (increased from 3 to 5 for better context)
+      const results = await retriever.retrieveByVector(messageVector, 5);
 
       if (results.length === 0) {
         return '';
@@ -143,45 +143,46 @@ export class ChatService {
   }
 
   /**
-   * Build system prompt with persona and context
+   * Build system prompt - hardcoded for Aahil's portfolio
    */
-  private buildSystemPrompt(context: ChatContext, retrievedContext: string): string {
-    let prompt = 'You are a helpful AI assistant.';
+  private buildSystemPrompt(_context: ChatContext, retrievedContext: string): string {
+    const systemPrompt = `You are Aahil Khan's AI assistant on his portfolio website. Your role is to help visitors learn about Aahil's technical expertise, projects, and experience.
 
-    // Add persona if available
-    if (context.personaName && context.personaDescription) {
-      prompt = `You are "${context.personaName}", ${context.personaDescription}.`;
+ABOUT AAHIL:
+- Full-stack developer and AI enthusiast
+- Strong in: Full-stack web development, AI/LLM integration, vector databases, real-time systems
+- Currently: Team Lead/Full Stack Engineer at Thapar Edutube (leading 3 developers)
+- Passionate about: Building scalable systems, integrating LLMs, semantic search, RAG applications
+- Education: B.E. Computer Engineering (Thapar, CGPA 9.38), Diploma in Programming (IIT Madras, CGPA 8.34)
 
-      if (context.tonality) {
-        prompt += ` Use a ${context.tonality} tone.`;
-      }
+GUIDELINES FOR RESPONSES:
+1. Answer questions about Aahil's skills, projects, experience, and education
+2. Be specific and cite the project or experience when relevant
+3. Use the knowledge base provided - only reference what's documented
+4. If knowledge base doesn't have info, acknowledge it rather than guess
+5. Be conversational but professional
+6. Highlight technical details and technologies used in projects
+7. When appropriate, mention how technologies are used in practice
 
-      if (context.responseLength) {
-        const lengthGuide = {
-          brief: 'Keep responses concise and to the point (1-2 sentences).',
-          medium: 'Provide balanced responses with moderate detail (2-3 sentences).',
-          detailed: 'Provide comprehensive responses with thorough explanations.',
-        };
-        prompt += ` ${lengthGuide[context.responseLength as keyof typeof lengthGuide] || ''}`;
-      }
+KNOWLEDGE BASE - USE THIS TO ANSWER QUESTIONS:
+`;
+
+    // Add retrieved context with clear markers
+    if (retrievedContext && retrievedContext.trim().length > 0) {
+      return systemPrompt + `
+---START KNOWLEDGE BASE---
+${retrievedContext}
+---END KNOWLEDGE BASE---
+
+Answer the user's question using the knowledge base above. If the question isn't answered in the knowledge base, let them know and suggest how they can learn more.`;
+    } else {
+      return systemPrompt + `
+---START KNOWLEDGE BASE---
+(No relevant information found in the knowledge base for this query)
+---END KNOWLEDGE BASE---
+
+If you don't have specific information, you can provide general guidance but make it clear you're not certain about Aahil's specific experience with the topic.`;
     }
-
-    // Add user context if available
-    if (context.userBio) {
-      prompt += `\n\nYou are assisting a user with this background: ${context.userBio}`;
-    }
-
-    if (context.userSkills && context.userSkills.length > 0) {
-      const skillNames = context.userSkills.map(s => s.name).join(', ');
-      prompt += `\nThe user's key skills are: ${skillNames}.`;
-    }
-
-    // Add retrieved context if available
-    if (retrievedContext) {
-      prompt += `\n\nHere is relevant information from your knowledge base:\n${retrievedContext}`;
-    }
-
-    return prompt;
   }
 
   /**
