@@ -788,4 +788,57 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       });
     }
   });
+
+  /**
+   * POST /api/admin/debug/retrieve
+   * Debug endpoint - test vector retrieval
+   */
+  fastify.post<{ Body: { query: string } }>(
+    '/api/admin/debug/retrieve',
+    async (request, reply) => {
+      try {
+        const { query } = request.body;
+        
+        if (!query) {
+          return reply.code(400).send({ error: 'Missing query parameter' });
+        }
+
+        const { getEmbedder } = await import('../services/embedder.js');
+        const { getRetriever } = await import('../services/retriever.js');
+
+        const embedder = getEmbedder();
+        const retriever = getRetriever();
+
+        // Embed the query
+        const queryVector = await embedder.embedText(query);
+        logger.info('Query embedded', { query, vectorDim: queryVector.length });
+
+        // Retrieve results
+        const results = await retriever.retrieveByVector(queryVector, 10);
+        logger.info('Retrieval results', { count: results.length });
+
+        return reply.code(200).send({
+          success: true,
+          query,
+          results: results.map((r) => ({
+            id: r.id,
+            score: r.score,
+            text: r.text.substring(0, 150) + (r.text.length > 150 ? '...' : ''),
+            source: r.source,
+            projectId: r.projectId,
+            metadata: r.metadata,
+          })),
+          count: results.length,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Retrieval debug failed';
+        logger.error('Retrieval debug error', { error: errorMessage });
+        return reply.code(500).send({
+          success: false,
+          error: errorMessage,
+        });
+      }
+    }
+  );
 }
