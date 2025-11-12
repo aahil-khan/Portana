@@ -3,6 +3,7 @@ import { getEmbedder } from './embedder.js';
 import { getQdrant } from '../vector/index.js';
 import type { VectorPoint } from '../vector/index.js';
 import { createLogger } from '../utils/logger.js';
+import crypto from 'crypto';
 
 const logger = createLogger('GitHubIngestor');
 
@@ -167,6 +168,21 @@ export class GitHubIngestor {
   }
 
   /**
+   * Convert string ID to numeric ID for Qdrant
+   */
+  private stringToNumericId(str: string): number {
+    // Create a hash and convert to number
+    const hash = crypto.createHash('sha256').update(str).digest();
+    // Take first 8 bytes and convert to uint64
+    let id = 0;
+    for (let i = 0; i < 8; i++) {
+      id = id * 256 + hash[i];
+    }
+    // Ensure positive number
+    return Math.abs(id) % (2 ** 53 - 1); // Stay within JavaScript's safe integer range
+  }
+
+  /**
    * Ingest a single repo
    */
   async ingestRepo(repo: GitHubRepo): Promise<{ count: number; vectors: number }> {
@@ -199,7 +215,7 @@ export class GitHubIngestor {
 
       // Create vectors for Qdrant
       const vectors: VectorPoint[] = chunkedContent.map((content, idx) => ({
-        id: content.id,
+        id: String(this.stringToNumericId(content.id)),
         vector: embeddings[idx],
         payload: {
           text: content.text,
