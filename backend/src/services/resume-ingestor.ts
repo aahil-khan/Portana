@@ -157,11 +157,19 @@ export class ResumeIngestor {
     // EXPERIENCE
     if (this.resume.experience && this.resume.experience.length > 0) {
       this.resume.experience.forEach((job, jobIdx) => {
-        // Combine description + responsibilities
+        // Create a header with job title and context for better searchability
+        const jobHeader = `Work Experience: ${job.title} at ${job.company} (${job.duration})`;
+        const techsLine = job.technologies ? `Technologies: ${job.technologies.join(', ')}` : '';
+        
+        // Combine everything with clear structure
         const fullJobText =
+          jobHeader +
+          '\n' +
+          techsLine +
+          '\n' +
           job.description +
           '\n' +
-          (job.responsibilities ? job.responsibilities.join('\n') : '');
+          (job.responsibilities ? 'Responsibilities:\n' + job.responsibilities.join('\n') : '');
 
         const jobChunks = this.chunkText(fullJobText);
         jobChunks.forEach((text, chunkIdx) => {
@@ -188,11 +196,19 @@ export class ResumeIngestor {
     // PROJECTS
     if (this.resume.projects && this.resume.projects.length > 0) {
       this.resume.projects.forEach((project, projIdx) => {
-        // Combine description + highlights
+        // Create a header with project name and context for better searchability
+        const projectHeader = `Project: ${project.name}`;
+        const techsLine = project.technologies ? `Technologies: ${project.technologies.join(', ')}` : '';
+        
+        // Combine everything with clear structure
         const fullProjectText =
+          projectHeader +
+          '\n' +
+          techsLine +
+          '\n' +
           project.description +
           '\n' +
-          (project.highlights ? project.highlights.join('\n') : '');
+          (project.highlights ? 'Highlights:\n' + project.highlights.join('\n') : '');
 
         const projChunks = this.chunkText(fullProjectText);
         projChunks.forEach((text, chunkIdx) => {
