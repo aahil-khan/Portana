@@ -1,4 +1,5 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
+import crypto from 'crypto';
 
 export interface VectorPoint {
   id: string;
@@ -141,8 +142,18 @@ export class QdrantManager {
     console.log('Qdrant connection closed');
   }
 
-  private hashStringToId(str: string): string {
-    return str;
+  private hashStringToId(str: string): number | string {
+    // If it's already numeric string (from stringToNumericId in ingestor), use it
+    if (/^\d+$/.test(str)) {
+      return parseInt(str, 10);
+    }
+    // Otherwise hash it
+    const hash = crypto.createHash('sha256').update(str).digest();
+    let id = 0;
+    for (let i = 0; i < 8; i++) {
+      id = id * 256 + hash[i];
+    }
+    return Math.abs(id) % (2 ** 53 - 1);
   }
 }
 
