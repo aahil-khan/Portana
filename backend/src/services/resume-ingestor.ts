@@ -16,28 +16,67 @@ export interface ChunkedResume {
   metadata?: Record<string, unknown>;
 }
 
+interface ResumeJSON {
+  personal: {
+    name: string;
+    email: string;
+    phone?: string;
+    location?: string;
+  };
+  summary: string;
+  education?: Array<{
+    institution: string;
+    degree: string;
+    cgpa?: string;
+    grade?: string;
+  }>;
+  experience?: Array<{
+    title: string;
+    company: string;
+    location?: string;
+    duration: string;
+    technologies?: string[];
+    description: string;
+    responsibilities?: string[];
+  }>;
+  projects?: Array<{
+    name: string;
+    technologies?: string[];
+    description: string;
+    highlights?: string[];
+    link?: string;
+  }>;
+  skills?: Record<string, string[]>;
+  achievements?: Array<{
+    title: string;
+    event?: string;
+    organization?: string;
+  }>;
+}
+
 const CHUNK_SIZE = 500; // Characters per chunk
 const CHUNK_OVERLAP = 50; // Overlap between chunks
 
 /**
- * Ingest resume from markdown file into Qdrant
+ * Ingest resume from JSON file into Qdrant
  * Chunks resume by sections: Summary, Skills, Experience, Projects, Education
  */
 export class ResumeIngestor {
-  private resumeContent: string = '';
+  private resume: ResumeJSON | null = null;
 
   constructor() {
     this.loadResume();
   }
 
   /**
-   * Load resume from file
+   * Load resume from JSON file
    */
   private loadResume(): void {
     try {
-      const resumePath = resolve(process.cwd(), 'resume.md');
-      this.resumeContent = readFileSync(resumePath, 'utf-8');
-      logger.info(`Loaded resume from ${resumePath} (${this.resumeContent.length} chars)`);
+      const resumePath = resolve(process.cwd(), 'resume.json');
+      const content = readFileSync(resumePath, 'utf-8');
+      this.resume = JSON.parse(content);
+      logger.info(`Loaded resume from ${resumePath}`);
     } catch (error) {
       logger.error(`Failed to load resume: ${error}`);
       throw error;
@@ -72,121 +111,17 @@ export class ResumeIngestor {
   }
 
   /**
-   * Extract sections from resume
-   */
-  private extractSections(): Record<string, string> {
-    const sections: Record<string, string> = {};
-
-    // Extract SUMMARY
-    const summaryMatch = this.resumeContent.match(/SUMMARY\n([\s\S]*?)(?=EDUCATION|$)/);
-    if (summaryMatch) {
-      sections['summary'] = summaryMatch[1].trim();
-    }
-
-    // Extract EDUCATION
-    const educationMatch = this.resumeContent.match(/EDUCATION\n([\s\S]*?)(?=PROFESSIONAL EXPERIENCE|$)/);
-    if (educationMatch) {
-      sections['education'] = educationMatch[1].trim();
-    }
-
-    // Extract PROFESSIONAL EXPERIENCE
-    const experienceMatch = this.resumeContent.match(/PROFESSIONAL EXPERIENCE\n([\s\S]*?)(?=PROJECTS|$)/);
-    if (experienceMatch) {
-      sections['experience'] = experienceMatch[1].trim();
-    }
-
-    // Extract PROJECTS
-    const projectsMatch = this.resumeContent.match(/PROJECTS\n([\s\S]*?)(?=ACHIEVEMENTS|SKILLS|$)/);
-    if (projectsMatch) {
-      sections['projects'] = projectsMatch[1].trim();
-    }
-
-    // Extract SKILLS
-    const skillsMatch = this.resumeContent.match(/SKILLS\n([\s\S]*?)(?=ACHIEVEMENTS|OTHER|$)/);
-    if (skillsMatch) {
-      sections['skills'] = skillsMatch[1].trim();
-    }
-
-    // Extract ACHIEVEMENTS
-    const achievementsMatch = this.resumeContent.match(/ACHIEVEMENTS\n([\s\S]*?)(?=SKILLS|$)/);
-    if (achievementsMatch) {
-      sections['achievements'] = achievementsMatch[1].trim();
-    }
-
-    return sections;
-  }
-
-  /**
-   * Extract individual jobs from experience section
-   */
-  private parseExperience(experienceText: string): Array<{ title: string; content: string }> {
-    const jobs: Array<{ title: string; content: string }> = [];
-    
-    // Split by role titles (lines ending with dash followed by location/company info)
-    const jobRegex = /^([A-Za-z\s/]+)\s*-\s*(.+)$/gm;
-    let match;
-    const matches: Array<{ title: string; start: number }> = [];
-
-    while ((match = jobRegex.exec(experienceText)) !== null) {
-      matches.push({ title: match[1] + ' - ' + match[2], start: match.index });
-    }
-
-    for (let i = 0; i < matches.length; i++) {
-      const currentMatch = matches[i];
-      const nextMatch = matches[i + 1];
-      const end = nextMatch ? nextMatch.start : experienceText.length;
-      const content = experienceText.substring(currentMatch.start, end).trim();
-
-      jobs.push({
-        title: currentMatch.title,
-        content: content,
-      });
-    }
-
-    return jobs;
-  }
-
-  /**
-   * Extract individual projects from projects section
-   */
-  private parseProjects(projectsText: string): Array<{ title: string; content: string }> {
-    const projects: Array<{ title: string; content: string }> = [];
-    
-    // Split by project titles (all caps words followed by dash and description)
-    const projectRegex = /^([A-Za-z\s\-]+?)\s*-\s*\(Technologies:[^)]*\)/gm;
-    let match;
-    const matches: Array<{ title: string; start: number }> = [];
-
-    while ((match = projectRegex.exec(projectsText)) !== null) {
-      matches.push({ title: match[1].trim(), start: match.index });
-    }
-
-    for (let i = 0; i < matches.length; i++) {
-      const currentMatch = matches[i];
-      const nextMatch = matches[i + 1];
-      const end = nextMatch ? nextMatch.start : projectsText.length;
-      const content = projectsText.substring(currentMatch.start, end).trim();
-
-      projects.push({
-        title: currentMatch.title,
-        content: content,
-      });
-    }
-
-    return projects;
-  }
-
-  /**
-   * Create chunked content objects from resume sections
+   * Create chunked content objects from resume JSON
    */
   private async createChunks(): Promise<ChunkedResume[]> {
-    const sections = this.extractSections();
+    if (!this.resume) throw new Error('Resume not loaded');
+
     const chunks: ChunkedResume[] = [];
     let globalChunkIndex = 0;
 
-    // Process SUMMARY
-    if (sections['summary']) {
-      const summaryChunks = this.chunkText(sections['summary']);
+    // SUMMARY
+    if (this.resume.summary) {
+      const summaryChunks = this.chunkText(this.resume.summary);
       summaryChunks.forEach((text, idx) => {
         chunks.push({
           id: `resume-summary-${idx}`,
@@ -199,37 +134,50 @@ export class ResumeIngestor {
       });
     }
 
-    // Process EDUCATION (as single section or could break into entries)
-    if (sections['education']) {
-      const eduChunks = this.chunkText(sections['education']);
-      eduChunks.forEach((text, idx) => {
+    // EDUCATION
+    if (this.resume.education && this.resume.education.length > 0) {
+      this.resume.education.forEach((edu, eduIdx) => {
+        const eduText = `${edu.institution} - ${edu.degree}${edu.cgpa ? ` (CGPA: ${edu.cgpa})` : ''}${edu.grade ? ` (Grade: ${edu.grade})` : ''}`;
         chunks.push({
-          id: `resume-education-${idx}`,
-          text,
+          id: `resume-education-${eduIdx}`,
+          text: eduText,
           section: 'education',
-          chunkIndex: idx,
-          metadata: { section: 'education' },
+          subsection: edu.institution,
+          chunkIndex: 0,
+          metadata: {
+            section: 'education',
+            institution: edu.institution,
+            degree: edu.degree,
+          },
         });
         globalChunkIndex++;
       });
     }
 
-    // Process EXPERIENCE (by job)
-    if (sections['experience']) {
-      const jobs = this.parseExperience(sections['experience']);
-      jobs.forEach((job, jobIdx) => {
-        const jobChunks = this.chunkText(job.content);
+    // EXPERIENCE
+    if (this.resume.experience && this.resume.experience.length > 0) {
+      this.resume.experience.forEach((job, jobIdx) => {
+        // Combine description + responsibilities
+        const fullJobText =
+          job.description +
+          '\n' +
+          (job.responsibilities ? job.responsibilities.join('\n') : '');
+
+        const jobChunks = this.chunkText(fullJobText);
         jobChunks.forEach((text, chunkIdx) => {
           chunks.push({
             id: `resume-experience-${jobIdx}-${chunkIdx}`,
             text,
             section: 'experience',
-            subsection: job.title,
+            subsection: `${job.title} at ${job.company}`,
             chunkIndex: chunkIdx,
             metadata: {
               section: 'experience',
-              job: job.title,
-              jobIndex: jobIdx,
+              title: job.title,
+              company: job.company,
+              location: job.location,
+              duration: job.duration,
+              technologies: job.technologies,
             },
           });
           globalChunkIndex++;
@@ -237,22 +185,28 @@ export class ResumeIngestor {
       });
     }
 
-    // Process PROJECTS (by project)
-    if (sections['projects']) {
-      const projects = this.parseProjects(sections['projects']);
-      projects.forEach((project, projIdx) => {
-        const projChunks = this.chunkText(project.content);
+    // PROJECTS
+    if (this.resume.projects && this.resume.projects.length > 0) {
+      this.resume.projects.forEach((project, projIdx) => {
+        // Combine description + highlights
+        const fullProjectText =
+          project.description +
+          '\n' +
+          (project.highlights ? project.highlights.join('\n') : '');
+
+        const projChunks = this.chunkText(fullProjectText);
         projChunks.forEach((text, chunkIdx) => {
           chunks.push({
             id: `resume-projects-${projIdx}-${chunkIdx}`,
             text,
             section: 'projects',
-            subsection: project.title,
+            subsection: project.name,
             chunkIndex: chunkIdx,
             metadata: {
               section: 'projects',
-              project: project.title,
-              projectIndex: projIdx,
+              name: project.name,
+              technologies: project.technologies,
+              link: project.link,
             },
           });
           globalChunkIndex++;
@@ -260,31 +214,44 @@ export class ResumeIngestor {
       });
     }
 
-    // Process SKILLS
-    if (sections['skills']) {
-      const skillChunks = this.chunkText(sections['skills']);
-      skillChunks.forEach((text, idx) => {
+    // SKILLS
+    if (this.resume.skills) {
+      let skillIdx = 0;
+      for (const [category, skills] of Object.entries(this.resume.skills)) {
+        const skillsText = `${category}: ${Array.isArray(skills) ? skills.join(', ') : skills}`;
         chunks.push({
-          id: `resume-skills-${idx}`,
-          text,
+          id: `resume-skills-${skillIdx}`,
+          text: skillsText,
           section: 'skills',
-          chunkIndex: idx,
-          metadata: { section: 'skills' },
+          subsection: category,
+          chunkIndex: 0,
+          metadata: {
+            section: 'skills',
+            category,
+            skills,
+          },
         });
         globalChunkIndex++;
-      });
+        skillIdx++;
+      }
     }
 
-    // Process ACHIEVEMENTS
-    if (sections['achievements']) {
-      const achievementChunks = this.chunkText(sections['achievements']);
-      achievementChunks.forEach((text, idx) => {
+    // ACHIEVEMENTS
+    if (this.resume.achievements && this.resume.achievements.length > 0) {
+      this.resume.achievements.forEach((achievement, achIdx) => {
+        const achText = `${achievement.title} - ${achievement.event}${achievement.organization ? ` by ${achievement.organization}` : ''}`;
         chunks.push({
-          id: `resume-achievements-${idx}`,
-          text,
+          id: `resume-achievements-${achIdx}`,
+          text: achText,
           section: 'achievements',
-          chunkIndex: idx,
-          metadata: { section: 'achievements' },
+          subsection: achievement.title,
+          chunkIndex: 0,
+          metadata: {
+            section: 'achievements',
+            title: achievement.title,
+            event: achievement.event,
+            organization: achievement.organization,
+          },
         });
         globalChunkIndex++;
       });
