@@ -4,14 +4,14 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY backend/package.json backend/package-lock.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy source code
-COPY tsconfig.json .
-COPY src/ ./src/
+COPY backend/tsconfig.json .
+COPY backend/src/ ./src/
 
 # Build TypeScript
 RUN npm run build
@@ -25,13 +25,16 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY backend/package.json backend/package-lock.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
+
+# Copy resume.json from repo root
+COPY resume.json ./resume.json
 
 # Create data and logs directories
 RUN mkdir -p /data /app/logs

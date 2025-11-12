@@ -5,7 +5,7 @@
     "phone": "+91 8979884490",
     "location": "Patiala, India"
   },
-  "summary": "Full-stack developer and AI enthusiast with proven experience delivering scalable web, backend, and AI-powered applications. Adept at leading teams, architecting robust systems, and integrating LLM-driven features for real-world impact. Currently pursuing a B.E. in Computer Engineering and a Diploma in Programming from IIT Madras. Eager to contribute technical expertise to challenging, high-impact projects.",
+  "summary": "Full-stack developer and Al enthusiast with proven experience delivering scalable web, backend, and Al-powered applications. Adept at leading teams, architecting robust systems, and integrating LLM-driven features for real-world impact. Currently pursuing a B.E. in Computer Engineering and a Diploma in Programming from IIT Madras. Eager to contribute technical expertise to challenging, high-impact projects.",
   "education": [
     {
       "institution": "Thapar Institute of Engineering Technology",
@@ -27,41 +27,40 @@
     {
       "title": "Team Lead/Full Stack Engineer",
       "company": "Thapar Edutube",
-      "location": "Thapar University, Patiala, India",
+      "location": "Patiala, India",
       "duration": "Aug 2023-Present",
       "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS", "Redis", "Docker"],
       "description": "Led a team of 3 developers to build the complete frontend (Next.js) and backend (Node.js) for Thapar Edutube, an exclusive lecture archive for 10000+ university students.",
       "responsibilities": [
-        "Led a team of 3 developers to build the complete frontend (Next.js) and backend (Node.js) for Thapar Edutube",
-        "Currently leading storage and hosting setup, coordinating with faculty to record and upload lectures",
-        "Designing teacher dashboards for managing course flow, uploading resources, and customizing lesson sequencing",
-        "Developed auxiliary tools, including a slot booking app for reserving lecture recording times and an admin dashboard for customizing course, chapter and lecture structures"
+        "Led a team of 3 developers to build the complete frontend (Next.js) and backend (Node.js) for Thapar Edutube, an exclusive lecture archive for 10000+ university students.",
+        "Currently leading storage and hosting setup, coordinating with faculty to record and upload lectures.",
+        "Designing teacher dashboards for managing course flow, uploading resources, and customizing lesson sequencing.",
+        "Developed auxiliary tools, including a slot booking app for reserving lecture recording times and an admin dashboard for customizing course, chapter and lecture structures."
       ]
     },
     {
       "title": "Backend Engineer",
       "company": "Datesheet Generator",
-      "location": "Thapar University, Patiala, India",
+      "location": "Patiala, India",
       "duration": "Mar 2025-Present",
       "technologies": ["Flask", "MySQL", "Jinja2", "Python"],
       "description": "Re-architected the in-progress datesheet generator project from Flask sessions to a MySQL-backed, multi-user dashboard system.",
       "responsibilities": [
-        "Re-architected the in-progress datesheet generator project from Flask sessions to a MySQL-backed, multi-user dashboard system",
-        "Implemented secure login, multi-user support, and savepoint functionality to allow partial work resumption",
-        "Enhanced datesheet creation workflow for improved usability and reduced scheduling errors",
-        "Currently integrating with the university's PeopleSoft Oracle database to automatically fetch student, course, and faculty details and push finalized datesheets directly"
+        "Re-architected the in-progress datesheet generator project from Flask sessions to a MySQL-backed, multi-user dashboard system.",
+        "Implemented secure login, multi-user support, and savepoint functionality to allow partial work resumption.",
+        "Enhanced datesheet creation workflow for improved usability and reduced scheduling errors.",
+        "Currently integrating with the university's PeopleSoft Oracle database to automatically fetch student, course, and faculty details and push finalized datesheets directly."
       ]
     }
   ],
   "projects": [
     {
-      "name": "SkillMap",
-      "subtitle": "Personalized Learning Engine",
+      "name": "SkillMap - Personalized Learning Engine",
       "technologies": ["Next.js", "Express", "Node.js", "Qdrant", "GPT-4"],
-      "description": "Built AI-driven platform to generate personalized learning paths based on resumes and user goals.",
+      "description": "Built Al-driven platform to generate personalized learning paths based on resumes and user goals.",
       "highlights": [
-        "Implemented skill taxonomy embedding in Qdrant, enabling semantic search and peer skill-matching",
-        "Integrated OpenAI's GPT-4 for automated gap analysis and personalized recommendations, streamlining the learning path generation process"
+        "Implemented skill taxonomy embedding in Qdrant, enabling semantic search and peer skill-matching.",
+        "Integrated OpenAI's GPT-4 for automated gap analysis and personalized recommendations, streamlining the learning path generation process."
       ]
     },
     {
@@ -69,9 +68,9 @@
       "technologies": ["Flask", "Vue.js", "SQLite", "Redis", "Celery"],
       "description": "Developed real-time parking management system with JWT authentication and granular role-based access.",
       "highlights": [
-        "Integrated Redis caching and Celery-based scheduling, boosting API response speed by 35%",
-        "Built admin and attendant dashboards with live occupancy tracking and automated availability updates",
-        "Implemented scheduled reports and alerts for low availability, sent via email notifications"
+        "Integrated Redis caching and Celery-based scheduling, boosting API response speed by 35%.",
+        "Built admin and attendant dashboards with live occupancy tracking and automated availability updates.",
+        "Implemented scheduled reports and alerts for low availability, sent via email notifications."
       ]
     }
   ],
@@ -81,7 +80,7 @@
     "ai_llm": ["LangChain", "OpenAI Chat Completions Endpoint", "OpenAI Assistants API", "Prompt Engineering"],
     "search_vectors": ["OpenAI Embeddings", "PostgreSQL FTS", "Qdrant", "Elasticsearch"],
     "databases": ["PostgreSQL", "MySQL", "SQLite", "Redis", "SQLAlchemy", "Prisma"],
-    "cloud": ["AWS (EC2)", "Heroku", "Vercel", "Cloudflare Tunnels"],
+    "cloud": ["AWS (EC2)", "Heroku", "Vercel", "Cloudflare Tunnels (cloudflared)"],
     "devops": ["Docker", "Git", "GitHub", "Github Actions", "CI/CD pipelines"],
     "testing": ["Jest (unit testing)", "Postman"],
     "ui": ["Bootstrap", "MUI", "Tailwind CSS"],
@@ -90,8 +89,8 @@
   "achievements": [
     {
       "title": "Innovation Award",
-      "event": "Agentic AI Hackathon 2025",
-      "organization": "Ulster University (UK)"
+      "event": "Agentic Al Hackathon 2025",
+      "organization": "Organized by Ulster University (UK)"
     }
   ]
 }
