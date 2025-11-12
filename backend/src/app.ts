@@ -8,6 +8,7 @@ import { registerAdminRoutes } from './routes/admin.js';
 import { registerChatRoutes } from './routes/chat.js';
 import { onboardingRoutes as registerOnboardingRoutes } from './routes/onboarding.js';
 import { registerWebhookRoutes } from './routes/webhooks.js';
+import { registerCommandRoutes } from './routes/commands.js';
 
 /**
  * Initialize Fastify application with all plugins and middleware
@@ -149,6 +150,7 @@ export async function startServer(app: FastifyInstance): Promise<void> {
     await registerChatRoutes(app);
     await registerOnboardingRoutes(app);
     await registerWebhookRoutes(app);
+    await registerCommandRoutes(app);
 
     app.log.info('All routes registered');
 
