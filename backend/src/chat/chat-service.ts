@@ -147,15 +147,21 @@ export class ChatService {
    * Supports three response types: text, command, hybrid
    */
   private buildSystemPrompt(_context: ChatContext, retrievedContext: string, userMessage: string): string {
-    const responseFormat = `
-RESPONSE FORMAT - YOU MUST RESPOND AS VALID JSON ONLY (no markdown, no explanations):
+    const responseFormat = `RESPONSE FORMAT:
+You MUST respond with VALID JSON ONLY. No markdown, no code blocks, no extra text.
+Not allowed: \`\`\`json ... \`\`\`
+Not allowed: Any text before or after JSON
+
+Valid examples:
+{"type":"text","content":"Your response...","citations":[]}
+{"type":"hybrid","content":"Your response...","suggestedCommand":"projects","showSuggestion":true}
 
 If this is a natural language question:
 {
   "type": "text",
   "content": "Your conversational response...",
   "citations": [
-    { "source": "Resume: Experience", "snippet": "..." }
+    {"source": "Resume: Experience", "snippet": "..."}
   ]
 }
 
@@ -165,13 +171,6 @@ If this looks like a command-like question (e.g., "show me projects", "what's yo
   "content": "Your response...",
   "suggestedCommand": "projects",
   "showSuggestion": true
-}
-
-For generic knowledge questions:
-{
-  "type": "text",
-  "content": "Your answer...",
-  "citations": []
 }
 `;
 
@@ -188,29 +187,25 @@ CRITICAL RULES:
 5. Be conversational but accurate
 6. Detect command-like patterns and use "hybrid" type with suggestedCommand
 7. For hybrid responses, suggest appropriate command: "projects", "stack", "experience", "blog", "timeline", or "misc"
-8. RESPOND ONLY WITH VALID JSON - no markdown formatting, no code blocks, no explanations
+8. RESPOND AS PURE JSON - no markdown, no code blocks, no explanations before or after
 
 KNOWLEDGE BASE:
 ${retrievedContext}
 
 User message: "${userMessage}"
 
-Analyze the user message and respond ONLY as JSON using the formats above.`;
+Respond ONLY as JSON. No markdown. Pure JSON only.`;
     } else {
       return `You are Aahil Khan's AI portfolio assistant. Unfortunately, no relevant information was found to answer this question.
 
 ${responseFormat}
 
 Respond with:
-{
-  "type": "text",
-  "content": "I don't have information about that in my knowledge base. You might want to check Aahil's GitHub or other projects directly.",
-  "citations": []
-}
+{"type":"text","content":"I don't have information about that in my knowledge base. You might want to check Aahil's GitHub or other projects directly.","citations":[]}
 
 User message: "${userMessage}"
 
-Respond ONLY with valid JSON.`;
+Respond ONLY as JSON. No markdown. Pure JSON only.`;
     }
   }
 
