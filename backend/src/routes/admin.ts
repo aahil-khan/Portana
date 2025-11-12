@@ -6,6 +6,7 @@ import {
 } from '../admin/services/index.js';
 import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
 import { getGitHubIngestor } from '../services/github-ingestor.js';
+import { getResumeIngestor } from '../services/resume-ingestor.js';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('AdminRoutes');
@@ -749,6 +750,38 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to get status';
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/ingest/resume
+   * Ingest resume from resume.md file
+   */
+  fastify.post('/api/admin/ingest/resume', async (_request, reply) => {
+    try {
+      const ingestor = getResumeIngestor();
+
+      logger.info('Starting resume ingestion...');
+      const result = await ingestor.ingest();
+
+      logger.info('Resume ingestion complete', {
+        totalChunks: result.totalChunks,
+        totalVectors: result.totalVectors,
+      });
+
+      return reply.code(200).send({
+        success: true,
+        message: `Successfully ingested resume - ${result.totalVectors} vectors created`,
+        data: result,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Resume ingestion failed';
+      logger.error('Resume ingestion error', { error: errorMessage });
       return reply.code(500).send({
         success: false,
         error: errorMessage,
