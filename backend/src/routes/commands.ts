@@ -62,8 +62,8 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
           description: project.description,
           tags: project.technologies,
           highlights: project.highlights,
-          link: '#',
-          github: '#',
+          link: project.link || '#',
+          github: project.github || '#',
         })),
       };
 

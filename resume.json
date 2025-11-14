@@ -62,7 +62,9 @@
       "highlights": [
         "Implemented skill taxonomy embedding in Qdrant, enabling semantic search and peer skill-matching",
         "Integrated OpenAI's GPT-4 for automated gap analysis and personalized recommendations, streamlining the learning path generation process"
-      ]
+      ],
+      "link": "https://skillmap.vercel.app",
+      "github": "https://github.com/aahil-khan/skillmap"
     },
     {
       "name": "Vehicle Parking App",
@@ -72,7 +74,9 @@
         "Integrated Redis caching and Celery-based scheduling, boosting API response speed by 35%",
         "Built admin and attendant dashboards with live occupancy tracking and automated availability updates",
         "Implemented scheduled reports and alerts for low availability, sent via email notifications"
-      ]
+      ],
+      "link": "https://parking-app-demo.vercel.app",
+      "github": "https://github.com/aahil-khan/vehicle-parking"
     }
   ],
   "skills": {
