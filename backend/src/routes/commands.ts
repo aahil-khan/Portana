@@ -377,35 +377,7 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
       const response = {
         type: 'command',
         command: 'start',
-        content: `👋 Welcome! I'm ${resume.personal.name}.
-
-This is my AI-powered portfolio assistant. Think of me as your guide through Aahil's professional world.
-
-📚 **Here's what you can do:**
-
-**Commands** - Type any of these to explore:
-• /projects - See my recent projects and work
-• /blog - Read my latest articles on Medium
-• /stack - Check out my tech skills and specializations  
-• /experience - Learn about my professional journey
-• /timeline - View my complete career timeline
-• /help - See all available commands
-
-**Ask anything** - Or just have a natural conversation! I have access to:
-✓ My resume and professional background
-✓ Project details and GitHub repositories  
-✓ Blog articles and Medium stories
-✓ Technical expertise and skills
-
-I can answer questions about my experience, suggest relevant projects, provide blog recommendations, or just chat.
-
-**💡 Quick Tips:**
-- Ask "what projects have you built?" or just use /projects
-- Looking for my tech stack? Try /stack or ask "what technologies do you use?"
-- Want to read something? Ask "recommend a blog post" or use /blog
-- Need to know my background? Try /experience or /timeline
-
-Go ahead and explore! Ask me anything about my work, projects, or experiences. 🚀`,
+        content: `👋 Welcome! I'm ${resume.personal.name}.\n\nThis is my AI-powered portfolio assistant. Think of me as your guide through my professional world.\n\n📚 **Here's what you can do:**\n\n**Commands** - Type any of these to explore:\n• /projects - See my recent projects and work\n• /blog - Read my latest articles on Medium\n• /stack - Check out my tech skills and specializations\n• /experience - Learn about my professional journey\n• /timeline - View my complete career timeline\n• /help - See all available commands\n\n**Ask anything** - Or just have a natural conversation! I have access to:\n✓ My resume and professional background\n✓ Project details and GitHub repositories\n✓ Blog articles and Medium stories\n✓ Technical expertise and skills\n\nI can answer questions about my experience, suggest relevant projects, provide blog recommendations, or just chat.\n\n**💡 Quick Tips:**\n- Ask "what projects have you built?" or just use /projects\n- Looking for my tech stack? Try /stack or ask "what technologies do you use?"\n- Want to read something? Ask "recommend a blog post" or use /blog\n- Need to know my background? Try /experience or /timeline\n\nGo ahead and explore! Ask me anything about my work, projects, or experiences. 🚀`,
         data: null,
       };
 
