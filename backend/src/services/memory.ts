@@ -35,6 +35,45 @@ export class MemoryService {
     return session;
   }
 
+  ensureSession(
+    sessionId: string,
+    userId?: string,
+    metadata?: Record<string, unknown>
+  ): Session {
+    let session = this.sessions.get(sessionId);
+
+    if (!session) {
+      session = {
+        id: sessionId,
+        userId,
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        expiresAt: Date.now() + this.sessionTTL,
+        metadata,
+      };
+
+      this.sessions.set(sessionId, session);
+      return session;
+    }
+
+    if (userId && !session.userId) {
+      session.userId = userId;
+    }
+
+    if (metadata) {
+      session.metadata = {
+        ...(session.metadata || {}),
+        ...metadata,
+      };
+    }
+
+    session.expiresAt = Date.now() + this.sessionTTL;
+    session.updatedAt = Date.now();
+
+    return session;
+  }
+
   getSession(sessionId: string): Session | null {
     const session = this.sessions.get(sessionId);
 

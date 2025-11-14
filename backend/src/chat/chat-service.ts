@@ -67,6 +67,14 @@ export class ChatService {
       onboardingSessionId,
     };
     this.sessions.set(sessionId, session);
+
+    try {
+      const memory = getMemory();
+      memory.ensureSession(sessionId, userId, onboardingSessionId ? { onboardingSessionId } : undefined);
+    } catch (error) {
+      // Memory service failures shouldn't block chat creation
+    }
+
     return session;
   }
 
@@ -179,10 +187,10 @@ If this looks like a command-like question (e.g., "show me projects", "what's yo
 ${responseFormat}
 
 BEHAVIOR GUIDELINES:
-1. Be warm and welcoming - respond to casual greetings like "hi", "hello", "hey" with friendly replies
+1. Be warm and welcoming - respond to casual greetings like "hi", "hello", "hey" with friendly replies, but always route back to answers questions about Aahil
 2. If the user asks about Aahil's work, experience, projects, or skills - use the knowledge base below to provide accurate information with citations
 3. If asked something about Aahil that's NOT in the knowledge base, be honest and say you don't have that specific info, but stay friendly
-4. You can have natural conversations and answer general questions (not about Aahil) without requiring knowledge base info
+4. You can have natural conversations and answer general questions (not about Aahil) without requiring knowledge base info but still focus on Aahil where possible
 5. Detect command-like patterns and use "hybrid" type with suggestedCommand when appropriate
 6. For hybrid responses, suggest appropriate command: "projects", "stack", "experience", "timeline", or "misc"
 7. Keep responses concise but friendly
@@ -222,11 +230,7 @@ Respond ONLY as JSON. No markdown. Pure JSON only.`;
   private async saveMessage(sessionId: string, role: string, content: string): Promise<void> {
     try {
       const memory = getMemory();
-      // Ensure session exists in memory service
-      const session = memory.getSession(sessionId);
-      if (!session) {
-        throw new Error(`Session not found: ${sessionId}`);
-      }
+      memory.ensureSession(sessionId);
       memory.addMessage(sessionId, role as 'user' | 'assistant', content);
     } catch (error) {
       // Gracefully handle memory save failures
@@ -279,7 +283,8 @@ Respond ONLY as JSON. No markdown. Pure JSON only.`;
 
       // Create streaming chat completion
       const stream = await this.getOpenAI().chat.completions.create({
-        model: 'gpt-4o',
+        // model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages,
         stream: true,
         max_tokens: 2000,
