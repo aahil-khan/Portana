@@ -50,9 +50,25 @@ function loadResume(): ResumeData {
  */
 function loadBlogs(): BlogsData {
   try {
-    const blogsPath = resolve(process.cwd(), 'blogs.json');
-    const data = readFileSync(blogsPath, 'utf-8');
-    return JSON.parse(data);
+    // Try multiple locations
+    const possiblePaths = [
+      resolve(process.cwd(), 'blogs.json'),
+      resolve(process.cwd(), '..', 'blogs.json'),
+      resolve(import.meta.url.replace('file://', ''), '..', '..', '..', '..', 'blogs.json'),
+    ];
+
+    for (const path of possiblePaths) {
+      try {
+        const data = readFileSync(path, 'utf-8');
+        console.log('Loaded blogs from:', path);
+        return JSON.parse(data);
+      } catch {
+        // Try next path
+      }
+    }
+
+    console.warn('blogs.json not found in any location, returning empty blogs');
+    return { blogs: [] };
   } catch (error) {
     console.error('Error loading blogs.json:', error);
     return { blogs: [] };

@@ -1,0 +1,14 @@
+
+{
+  "blogs": [
+    {
+      "id": "blog-1",
+      "title": "How I Turned an Old Laptop Into My Personal Cloud Server",
+      "description": "How I repurposed an old laptop to create a personal cloud server. A deep dive into our setup, challenges, and solutions.",
+      "link": "https://medium.com/@aahilminookhan/how-i-turned-an-old-laptop-into-my-personal-cloud-server-16d07de27399",
+      "publishedAt": "2024-11-13",
+      "tags": ["Self Hosting", "Home Server", "DevOps", "Linux", "Software Development"],
+      "readTime": 6
+    }
+  ]
+}

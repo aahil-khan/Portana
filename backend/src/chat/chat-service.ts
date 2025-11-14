@@ -142,7 +142,13 @@ export class ChatService {
       }
 
       return results
-        .map((r: any) => `- ${r.text} (from ${r.source})`)
+        .map((r: any) => {
+          // Format Medium articles with clickable links
+          if (r.source === 'medium' && r.metadata?.articleUrl) {
+            return `- ${r.text}\n  Article: "${r.metadata.articleTitle}" - ${r.metadata.articleUrl} (Medium)`;
+          }
+          return `- ${r.text} (from ${r.source})`;
+        })
         .join('\n');
     } catch (error) {
       // Gracefully handle retrieval errors
