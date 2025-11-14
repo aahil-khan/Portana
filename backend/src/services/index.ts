@@ -6,3 +6,4 @@ export { DeduplicatorService, getDeduplicator, type DeduplicationResult, type Co
 export { VectorDeduplicator, getVectorDeduplicator, type DedupeEntry } from './vector-deduplicator.js';
 export { ResumeParserService, getResumeParser, type ExtractedResumeData, type Experience, type Education } from './resume-parser.js';
 export { GitHubIngestor, getGitHubIngestor, type GitHubRepo, type ChunkedContent } from './github-ingestor.js';
+export { MediumIngestor, getMediumIngestor, type MediumArticle, type ChunkedArticle } from './medium-ingestor.js';

@@ -16,6 +16,22 @@ interface ResumeData {
 }
 
 /**
+ * Blogs data interface
+ */
+interface BlogsData {
+  blogs: Array<{
+    id: string;
+    title: string;
+    description: string;
+    link: string;
+    publishedAt: string;
+    tags: string[];
+    readTime?: number;
+    claps?: number;
+  }>;
+}
+
+/**
  * Load resume data from resume.json
  */
 function loadResume(): ResumeData {
@@ -26,6 +42,20 @@ function loadResume(): ResumeData {
   } catch (error) {
     console.error('Error loading resume.json:', error);
     throw new Error('Failed to load resume data');
+  }
+}
+
+/**
+ * Load blogs data from blogs.json
+ */
+function loadBlogs(): BlogsData {
+  try {
+    const blogsPath = resolve(process.cwd(), 'blogs.json');
+    const data = readFileSync(blogsPath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error loading blogs.json:', error);
+    return { blogs: [] };
   }
 }
 
@@ -280,6 +310,37 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
           skills: resume.skills,
           achievements: resume.achievements,
         },
+      };
+
+      return reply.send(response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.code(500).send({ error: message });
+    }
+  });
+
+  /**
+   * GET /api/commands/blog
+   * Returns Medium articles in command format
+   */
+  fastify.get<{}>('/api/commands/blog', async (_request, reply) => {
+    try {
+      const blogsData = loadBlogs();
+
+      const response: CommandResponse = {
+        type: 'command',
+        command: 'blog',
+        content: 'My latest blog posts:',
+        data: blogsData.blogs.map((article) => ({
+          id: article.id,
+          title: article.title,
+          description: article.description,
+          link: article.link,
+          tags: article.tags,
+          publishedAt: article.publishedAt,
+          readTime: article.readTime || 0,
+          claps: article.claps || 0,
+        })),
       };
 
       return reply.send(response);

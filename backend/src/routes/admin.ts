@@ -7,6 +7,7 @@ import {
 import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
 import { getGitHubIngestor } from '../services/github-ingestor.js';
 import { getResumeIngestor } from '../services/resume-ingestor.js';
+import { getMediumIngestor } from '../services/medium-ingestor.js';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('AdminRoutes');
@@ -841,4 +842,84 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       }
     }
   );
+
+  /**
+   * POST /api/admin/ingest/medium
+   * Ingest Medium articles for specified username
+   */
+  fastify.post<{
+    Body: { username?: string };
+  }>('/api/admin/ingest/medium', async (request, reply) => {
+    try {
+      const ingestor = getMediumIngestor();
+      const username = (request.body as any)?.username || process.env.MEDIUM_USERNAME;
+
+      if (!username) {
+        return reply.code(400).send({
+          error: 'Medium username required (set MEDIUM_USERNAME env var or provide in request body)',
+        });
+      }
+
+      logger.info('Starting Medium article ingestion', { username });
+
+      const result = await ingestor.ingest(username);
+
+      logger.info('Medium ingestion complete', {
+        articlesCount: result.articlesCount,
+        totalChunks: result.totalChunks,
+      });
+
+      return reply.code(200).send({
+        success: true,
+        message: `Ingested ${result.totalChunks} chunks from ${result.articlesCount} Medium articles`,
+        data: result,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Medium ingestion failed';
+      logger.error('Medium ingestion error', { error: errorMessage });
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/ingest/medium/articles
+   * Get list of ingested Medium articles
+   */
+  fastify.get<{
+    Querystring: { username?: string };
+  }>('/api/admin/ingest/medium/articles', async (request, reply) => {
+    try {
+      const ingestor = getMediumIngestor();
+      const username = (request.query as any)?.username || process.env.MEDIUM_USERNAME;
+
+      if (!username) {
+        return reply.code(400).send({
+          error: 'Medium username required',
+        });
+      }
+
+      logger.info('Fetching Medium articles', { username });
+
+      const articles = await ingestor.getArticles(username);
+
+      return reply.code(200).send({
+        success: true,
+        username,
+        articleCount: articles.length,
+        articles,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to fetch articles';
+      logger.error('Medium fetch error', { error: errorMessage });
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
 }
