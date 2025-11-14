@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import OpenAI from 'openai';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { getMemory } from '../services/memory.js';
 import { getRetriever } from '../services/retriever.js';
 import { getEmbedder } from '../services/embedder.js';
@@ -137,22 +139,66 @@ export class ChatService {
       // Search for relevant content (increased from 3 to 5 for better context)
       const results = await retriever.retrieveByVector(messageVector, 5);
 
-      if (results.length === 0) {
-        return '';
+      let contextParts: string[] = [];
+
+      // Add vector search results
+      if (results.length > 0) {
+        contextParts.push(
+          results
+            .map((r: any) => {
+              // Format Medium articles with clickable links
+              if (r.source === 'medium' && r.metadata?.articleUrl) {
+                return `- ${r.text}\n  Article: "${r.metadata.articleTitle}" - ${r.metadata.articleUrl} (Medium)`;
+              }
+              return `- ${r.text} (from ${r.source})`;
+            })
+            .join('\n')
+        );
       }
 
-      return results
-        .map((r: any) => {
-          // Format Medium articles with clickable links
-          if (r.source === 'medium' && r.metadata?.articleUrl) {
-            return `- ${r.text}\n  Article: "${r.metadata.articleTitle}" - ${r.metadata.articleUrl} (Medium)`;
-          }
-          return `- ${r.text} (from ${r.source})`;
-        })
-        .join('\n');
+      // Load and include blog articles from blogs.json
+      try {
+        const blogsData = this.loadBlogs();
+        if (blogsData.blogs && blogsData.blogs.length > 0) {
+          const blogsContext = blogsData.blogs
+            .map((blog: any) => `- Blog: "${blog.title}" - ${blog.link}`)
+            .join('\n');
+          contextParts.push(`Available blog posts:\n${blogsContext}`);
+        }
+      } catch (blogError) {
+        // Gracefully skip blogs if loading fails
+      }
+
+      return contextParts.join('\n\n');
     } catch (error) {
       // Gracefully handle retrieval errors
       return '';
+    }
+  }
+
+  /**
+   * Load blogs data from blogs.json
+   */
+  private loadBlogs(): { blogs: Array<{ title: string; link: string }> } {
+    try {
+      // Try multiple locations
+      const possiblePaths = [
+        resolve(process.cwd(), 'blogs.json'),
+        resolve(process.cwd(), '..', 'blogs.json'),
+      ];
+
+      for (const path of possiblePaths) {
+        try {
+          const data = readFileSync(path, 'utf-8');
+          return JSON.parse(data);
+        } catch {
+          // Try next path
+        }
+      }
+
+      return { blogs: [] };
+    } catch (error) {
+      return { blogs: [] };
     }
   }
 

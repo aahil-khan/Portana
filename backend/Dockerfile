@@ -33,8 +33,9 @@ RUN npm ci --only=production
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy resume.json from repo root
+# Copy resume.json and blogs.json from repo root
 COPY resume.json ./resume.json
+COPY blogs.json ./blogs.json
 
 # Create data and logs directories
 RUN mkdir -p /data /app/logs
