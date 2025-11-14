@@ -3,53 +3,12 @@
   "blogs": [
     {
       "id": "blog-1",
-      "title": "Building Real-Time Lecture Streaming at Scale with Next.js and Node.js",
-      "description": "How we architected Thapar Edutube to handle 10,000+ concurrent students. A deep dive into our tech stack choices, database optimizations, and lessons learned.",
-      "link": "https://medium.com/@aahilkhan/realtime-lecture-streaming-nextjs-nodejs",
-      "publishedAt": "2024-11-14",
-      "tags": ["Next.js", "Node.js", "Architecture", "PostgreSQL"],
-      "readTime": 8,
-      "claps": 142
-    },
-    {
-      "id": "blog-2",
-      "title": "Vector Databases & RAG: Building AI-Powered Chat Interfaces",
-      "description": "Implementing retrieval-augmented generation with Qdrant and LLMs. Learn how to make AI systems remember context and fetch relevant information in real-time.",
-      "link": "https://medium.com/@aahilkhan/vector-databases-rag-guide",
-      "publishedAt": "2024-10-28",
-      "tags": ["AI", "Vector DB", "Qdrant", "LLM", "RAG"],
-      "readTime": 12,
-      "claps": 287
-    },
-    {
-      "id": "blog-3",
-      "title": "Full-Stack Performance: Redis Caching Strategies for High-Traffic Apps",
-      "description": "A practical guide to implementing Redis in production. From cache invalidation patterns to handling distributed cache scenarios at scale.",
-      "link": "https://medium.com/@aahilkhan/redis-caching-strategies",
-      "publishedAt": "2024-10-12",
-      "tags": ["Redis", "Performance", "Backend", "Caching"],
-      "readTime": 9,
-      "claps": 198
-    },
-    {
-      "id": "blog-4",
-      "title": "Designing Dashboard UIs with React 19 & Framer Motion: From Static to Interactive",
-      "description": "Building responsive, animated dashboards without sacrificing performance. Tips on component architecture, animation patterns, and mobile-first design.",
-      "link": "https://medium.com/@aahilkhan/react19-dashboard-design",
-      "publishedAt": "2024-09-30",
-      "tags": ["React", "Framer Motion", "UI/UX", "Animation"],
-      "readTime": 10,
-      "claps": 156
-    },
-    {
-      "id": "blog-5",
-      "title": "Docker & Deployment: Taking Your App from Local to Production",
-      "description": "A step-by-step guide to containerizing applications and deploying them reliably. Covers Docker best practices, multi-stage builds, and CI/CD pipelines.",
-      "link": "https://medium.com/@aahilkhan/docker-deployment-guide",
-      "publishedAt": "2024-09-15",
-      "tags": ["Docker", "DevOps", "Deployment", "CI/CD"],
-      "readTime": 11,
-      "claps": 312
+      "title": "How I Turned an Old Laptop Into My Personal Cloud Server",
+      "description": "How I repurposed an old laptop to create a personal cloud server. A deep dive into our setup, challenges, and solutions.",
+      "link": "https://medium.com/@aahilminookhan/how-i-turned-an-old-laptop-into-my-personal-cloud-server-16d07de27399",
+      "publishedAt": "2024-11-13",
+      "tags": ["Self Hosting", "Home Server", "DevOps", "Linux", "Software Development"],
+      "readTime": 6
     }
   ]
 }
