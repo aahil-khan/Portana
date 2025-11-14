@@ -21,6 +21,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       ENABLE_TELEMETRY: ${ENABLE_TELEMETRY:-true}
       TRACK_QUERIES: ${TRACK_QUERIES:-true}
+      MEDIUM_USERNAME: ${MEDIUM_USERNAME:-}
     volumes:
       - ./data:/data
       - ./logs:/app/logs
