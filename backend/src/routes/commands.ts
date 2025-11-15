@@ -377,7 +377,7 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
       const response = {
         type: 'command',
         command: 'start',
-        content: `Welcome! I'm ${resume.personal.name}.\n\nThis is my AI-powered portfolio assistant. Think of me as your guide through my professional world.\n\nHere's what you can do:\n\nCOMMANDS - Type any of these to explore:\n• /projects - See my recent projects and work\n• /blog - Read my latest articles on Medium\n• /stack - Check out my tech skills and specializations\n• /experience - Learn about my professional journey\n• /timeline - View my complete career timeline\n• /help - See all available commands\n\nASK ANYTHING - Or just have a natural conversation! I have access to:\n✓ My resume and professional background\n✓ Project details and GitHub repositories\n✓ Blog articles and Medium stories\n✓ Technical expertise and skills\n\nI can answer questions about my experience, suggest relevant projects, provide blog recommendations, or just chat.\n\nQUICK TIPS:\n- Ask "what projects have you built?" or just use /projects\n- Looking for my tech stack? Try /stack or ask "what technologies do you use?"\n- Want to read something? Ask "recommend a blog post" or use /blog\n- Need to know my background? Try /experience or /timeline\n\nGo ahead and explore! Ask me anything about my work, projects, or experiences.`,
+        content: `Welcome! I'm ${resume.personal.name}.\n\nThis is my AI-powered portfolio assistant. Think of me as your guide through my professional world.\n\nHere's what you can do:\n\nCOMMANDS - Type any of these to explore:\n• /projects - See my recent projects and work\n• /blog - Read my latest articles on Medium\n• /stack - Check out my tech skills and specializations\n• /experience - Learn about my professional journey\n• /timeline - View my complete career timeline\n• /resume - Download my resume\n• /contact - Get in touch with me\n• /help - See all available commands\n\nASK ANYTHING - Or just have a natural conversation! I have access to:\n✓ My resume and professional background\n✓ Project details and GitHub repositories\n✓ Blog articles and Medium stories\n✓ Technical expertise and skills\n\nI can answer questions about my experience, suggest relevant projects, provide blog recommendations, or just chat.\n\nQUICK TIPS:\n- Ask "what projects have you built?" or just use /projects\n- Looking for my tech stack? Try /stack or ask "what technologies do you use?"\n- Want to read something? Ask "recommend a blog post" or use /blog\n- Need to know my background? Try /experience or /timeline\n- Want my resume? Use /resume to download it\n- Want to reach out? Use /contact to send me a message\n\nGo ahead and explore! Ask me anything about my work, projects, or experiences.`,
         data: null,
       };
 
@@ -399,7 +399,6 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
         command: 'resume',
         content: "Here's my resume! Download it to see my full professional background, experience, education, and skills:",
         data: {
-          downloadUrl: '/api/misc/resume',
           fileName: 'Aahil Khan.pdf',
         },
       };
@@ -421,14 +420,7 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
         type: 'command',
         command: 'contact',
         content: "I'd love to hear from you! Fill out the form below and I'll get back to you as soon as possible.",
-        data: {
-          formEndpoint: '/api/misc/contact',
-          fields: [
-            { name: 'name', label: 'Your Name', type: 'text', required: true },
-            { name: 'email', label: 'Your Email', type: 'email', required: true },
-            { name: 'message', label: 'Message', type: 'textarea', required: true },
-          ],
-        },
+        data: null,
       };
 
       return reply.send(response);
