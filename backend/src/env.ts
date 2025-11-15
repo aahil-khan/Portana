@@ -28,6 +28,9 @@ const envSchema = z.object({
   TELEGRAM_CHAT_ID: z.string().optional(),
   DISCORD_WEBHOOK_URL: z.string().url().optional().or(z.literal('')),
 
+  // n8n webhook for contact form
+  N8N_WEBHOOK_URL: z.string().url().optional(),
+
   // Logging
   LOG_LEVEL: z
     .enum(['error', 'warn', 'info', 'debug'])

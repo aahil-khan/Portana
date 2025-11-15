@@ -387,4 +387,54 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
       return reply.code(500).send({ error: message });
     }
   });
+
+  /**
+   * GET /api/commands/resume
+   * Returns resume download link in command format
+   */
+  fastify.get<{}>('/api/commands/resume', async (_request, reply) => {
+    try {
+      const response = {
+        type: 'command',
+        command: 'resume',
+        content: "Here's my resume! Download it to see my full professional background, experience, education, and skills:",
+        data: {
+          downloadUrl: '/api/misc/resume',
+          fileName: 'Aahil Khan.pdf',
+        },
+      };
+
+      return reply.send(response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.code(500).send({ error: message });
+    }
+  });
+
+  /**
+   * GET /api/commands/contact
+   * Returns contact form in command format
+   */
+  fastify.get<{}>('/api/commands/contact', async (_request, reply) => {
+    try {
+      const response = {
+        type: 'command',
+        command: 'contact',
+        content: "I'd love to hear from you! Fill out the form below and I'll get back to you as soon as possible.",
+        data: {
+          formEndpoint: '/api/misc/contact',
+          fields: [
+            { name: 'name', label: 'Your Name', type: 'text', required: true },
+            { name: 'email', label: 'Your Email', type: 'email', required: true },
+            { name: 'message', label: 'Message', type: 'textarea', required: true },
+          ],
+        },
+      };
+
+      return reply.send(response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.code(500).send({ error: message });
+    }
+  });
 }
