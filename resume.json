@@ -63,8 +63,26 @@
         "Implemented skill taxonomy embedding in Qdrant, enabling semantic search and peer skill-matching",
         "Integrated OpenAI's GPT-4 for automated gap analysis and personalized recommendations, streamlining the learning path generation process"
       ],
-      "link": "https://skillmap.vercel.app",
+      "link": "https://skillmap-five.vercel.app",
       "github": "https://github.com/aahil-khan/skillmap"
+    },
+    {
+      "name": "Thapar Edutube",
+      "subtitle": "Thapar Exclusive Lecture Archive",
+      "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS"],
+      "description": "Led a team of 3 developers to build an exclusive lecture archive for 10000+ university students.",
+      "highlights": [
+        "Currently leading storage and hosting setup, coordinating with faculty to record and upload lectures.",
+        "Designing teacher dashboards for managing course flow, uploading resources, and customizing lesson sequencing.",
+        "Developed auxiliary tools, including a slot booking app for reserving lecture recording times and an admin dashboard for customizing course, chapter and lecture structures."
+      ],
+      "link": "https://edutube.dctofficethapar.xyz"
+    },
+    {
+      "name": "Intellidine",
+      "subtitle": "A Modern Restaurant Management Platform",
+      "technologies": ["Next.js", "Express", "Node.js", "Prisma", "Docker", "Kafka", "Prometheus", "Grafana"],
+      "description": "IntelliDine is a modern microservices-based restaurant management platform designed to streamline operations and enhance customer experience."
     },
     {
       "name": "Vehicle Parking App",
