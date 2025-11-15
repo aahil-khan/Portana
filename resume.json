@@ -92,9 +92,7 @@
         "Integrated Redis caching and Celery-based scheduling, boosting API response speed by 35%",
         "Built admin and attendant dashboards with live occupancy tracking and automated availability updates",
         "Implemented scheduled reports and alerts for low availability, sent via email notifications"
-      ],
-      "link": "https://parking-app-demo.vercel.app",
-      "github": "https://github.com/aahil-khan/vehicle-parking"
+      ]
     }
   ],
   "skills": {
