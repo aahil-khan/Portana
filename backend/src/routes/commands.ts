@@ -270,26 +270,16 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
     try {
       const resume = loadResume();
 
-      // Build timeline from education and experience
-      const timelineItems = [
-        ...resume.education.map((edu, idx) => ({
-          id: `edu-${idx}`,
-          type: 'education',
-          title: edu.degree,
-          subtitle: edu.institution,
-          date: 'N/A',
-          description: '',
-        })),
-        ...resume.experience.map((exp, idx) => ({
-          id: `exp-${idx}`,
-          type: 'experience',
-          title: exp.title,
-          subtitle: exp.company,
-          date: exp.duration,
-          description: exp.description,
-          technologies: exp.technologies,
-        })),
-      ];
+      // Build timeline from experience only (projects)
+      const timelineItems = resume.experience.map((exp, idx) => ({
+        id: `exp-${idx}`,
+        type: 'experience',
+        title: exp.title,
+        subtitle: exp.company,
+        date: exp.duration,
+        description: exp.description,
+        technologies: exp.technologies,
+      }));
 
       const response: CommandResponse = {
         type: 'command',

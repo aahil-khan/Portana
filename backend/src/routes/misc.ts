@@ -123,7 +123,7 @@ export async function registerMiscRoutes(fastify: FastifyInstance): Promise<void
         message: 'Thank you for your message! I will get back to you soon.',
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = "Something went wrong processing the contact form. Catch me on LinkedIn?";
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
