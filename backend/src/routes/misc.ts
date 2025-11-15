@@ -44,6 +44,32 @@ export async function registerMiscRoutes(fastify: FastifyInstance): Promise<void
   });
 
   /**
+   * GET /api/misc/extensions
+   * Serves the VS Code extensions list for download
+   */
+  fastify.get<{}>('/api/misc/extensions', async (_request, reply) => {
+    try {
+      const extensionsPath = resolve(process.cwd(), 'extensions.txt');
+      
+      if (!existsSync(extensionsPath)) {
+        return reply.code(404).send({ error: 'Extensions file not found' });
+      }
+
+      const fileBuffer = readFileSync(extensionsPath);
+      
+      reply.type('text/plain');
+      reply.header('Content-Disposition', 'attachment; filename="aahil-vscode-extensions.txt"');
+      reply.header('Content-Length', fileBuffer.length);
+      
+      return reply.send(fileBuffer);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      fastify.log.error(error);
+      return reply.code(500).send({ error: message });
+    }
+  });
+
+  /**
    * POST /api/misc/contact
    * Handles contact form submission and forwards to n8n webhook
    */

@@ -36,9 +36,10 @@ COPY --from=builder /app/dist ./dist
 # Copy public folder with resume PDF
 COPY backend/public ./public
 
-# Copy resume.json and blogs.json from repo root
+# Copy resume.json, blogs.json, and extensions.txt from repo root
 COPY resume.json ./resume.json
 COPY blogs.json ./blogs.json
+COPY backend/extensions.txt ./extensions.txt
 
 # Create data and logs directories
 RUN mkdir -p /data /app/logs

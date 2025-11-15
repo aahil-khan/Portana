@@ -419,4 +419,26 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
       return reply.code(500).send({ error: message });
     }
   });
+
+  /**
+   * GET /api/commands/misc
+   * Returns VS Code extensions setup
+   */
+  fastify.get<{}>('/api/commands/misc', async (_request, reply) => {
+    try {
+      const response = {
+        type: 'command',
+        command: 'misc',
+        content: 'My VS Code setup and extensions:',
+        data: {
+          downloadUrl: '/api/misc/extensions',
+        },
+      };
+
+      return reply.send(response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.code(500).send({ error: message });
+    }
+  });
 }
