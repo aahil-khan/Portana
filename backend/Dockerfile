@@ -33,6 +33,9 @@ RUN npm ci --only=production
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy public folder with resume PDF
+COPY backend/public ./public
+
 # Copy resume.json and blogs.json from repo root
 COPY resume.json ./resume.json
 COPY blogs.json ./blogs.json
