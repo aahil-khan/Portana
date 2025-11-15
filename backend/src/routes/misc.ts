@@ -82,6 +82,7 @@ export async function registerMiscRoutes(fastify: FastifyInstance): Promise<void
 
       // Prepare form data for n8n webhook
       const webhookUrl = env.N8N_WEBHOOK_URL;
+      fastify.log.info({ webhookUrl, envN8N: process.env.N8N_WEBHOOK_URL }, 'Debug: N8N webhook URL');
       if (!webhookUrl) {
         fastify.log.error('N8N_WEBHOOK_URL not configured');
         return reply.code(500).send({
