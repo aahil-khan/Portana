@@ -119,6 +119,7 @@ export async function registerWebhookRoutes(fastify: FastifyInstance): Promise<v
             date: (item.date as string) || new Date().toISOString(),
             tags: Array.isArray(item.tags) ? (item.tags as string[]) : ['medium'],
             source: 'medium' as const,
+            indexed_at: new Date().toISOString(),
             metadata: item.metadata as Record<string, unknown> | undefined,
           }));
           

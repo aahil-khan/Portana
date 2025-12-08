@@ -362,8 +362,6 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
    */
   fastify.get<{}>('/api/commands/start', async (_request, reply) => {
     try {
-      const resume = loadResume();
-      
       const response = {
         type: 'command',
         command: 'start',

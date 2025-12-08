@@ -1,8 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface BlogEntry {
   id: string;
@@ -66,7 +63,7 @@ export class BlogsSyncService {
   }
 
   /**
-   * Check if a blog entry already exists by URL
+   * Check if a blog entry already exists by URL or ID
    */
   private isDuplicate(newBlog: BlogEntry, existingBlogs: BlogEntry[]): boolean {
     return existingBlogs.some(
@@ -82,11 +79,10 @@ export class BlogsSyncService {
     const blogs = this.readBlogs();
 
     // Check if already exists (by URL or ID)
-    const existingIndex = blogs.findIndex(
-      (blog) => blog.url === newBlog.url || blog.id === newBlog.id
-    );
-
-    if (existingIndex >= 0) {
+    if (this.isDuplicate(newBlog, blogs)) {
+      const existingIndex = blogs.findIndex(
+        (blog) => blog.url === newBlog.url || blog.id === newBlog.id
+      );
       // Update existing
       blogs[existingIndex] = {
         ...blogs[existingIndex],

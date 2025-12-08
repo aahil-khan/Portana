@@ -956,6 +956,7 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
         date: article.pubDate || new Date().toISOString(),
         tags: Array.isArray(article.categories) ? article.categories : ['medium'],
         source: 'medium' as const,
+        indexed_at: new Date().toISOString(),
         metadata: {
           author: article.author,
           source: 'medium',
