@@ -8,6 +8,7 @@ import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
 import { getGitHubIngestor } from '../services/github-ingestor.js';
 import { getResumeIngestor } from '../services/resume-ingestor.js';
 import { getMediumIngestor } from '../services/medium-ingestor.js';
+import { BlogsSyncService } from '../webhooks/services/blogs-sync.js';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('AdminRoutes');
@@ -916,6 +917,69 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to fetch articles';
       logger.error('Medium fetch error', { error: errorMessage });
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/blogs/sync
+   * Regenerate blogs.json from Medium articles
+   * Useful for recovery if blogs.json gets out of sync
+   */
+  fastify.get<{
+    Querystring: { username?: string };
+  }>('/api/admin/blogs/sync', async (request, reply) => {
+    try {
+      const { username } = request.query;
+
+      if (!username) {
+        return reply.code(400).send({
+          error: 'Medium username required as query param',
+        });
+      }
+
+      logger.info('Regenerating blogs.json from Medium', { username });
+
+      const ingestor = getMediumIngestor();
+      const articles = await ingestor.getArticles(username);
+
+      // Transform articles to BlogEntry format
+      const blogEntries = articles.map((article: any) => ({
+        id: article.guid || article.link,
+        type: 'blog' as const,
+        title: article.title || 'Untitled',
+        summary: article.summary,
+        url: article.link,
+        date: article.pubDate || new Date().toISOString(),
+        tags: Array.isArray(article.categories) ? article.categories : ['medium'],
+        source: 'medium' as const,
+        metadata: {
+          author: article.author,
+          source: 'medium',
+        },
+      }));
+
+      // Sync to blogs.json
+      const blogSync = BlogsSyncService.getInstance();
+      blogSync.regenerateFromList(blogEntries);
+
+      logger.info('blogs.json regenerated successfully', {
+        articleCount: blogEntries.length,
+      });
+
+      return reply.code(200).send({
+        success: true,
+        message: 'blogs.json regenerated',
+        articleCount: blogEntries.length,
+        articles: blogEntries,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to regenerate blogs.json';
+      logger.error('Blog regeneration error', { error: errorMessage });
       return reply.code(500).send({
         success: false,
         error: errorMessage,

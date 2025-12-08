@@ -3,6 +3,7 @@ import {
   WebhookVerifierService,
   WebhookQueueService,
 } from '../webhooks/services/index.js';
+import { BlogsSyncService } from '../webhooks/services/blogs-sync.js';
 
 export async function registerWebhookRoutes(fastify: FastifyInstance): Promise<void> {
   const verifier = WebhookVerifierService.getInstance();
@@ -101,6 +102,40 @@ export async function registerWebhookRoutes(fastify: FastifyInstance): Promise<v
       }
 
       const webhookId = queue.addToQueue(request.body as Record<string, unknown>);
+      
+      // Auto-sync blogs.json if source is "medium"
+      const payload = request.body as Record<string, unknown>;
+      if (payload.source === 'medium' && Array.isArray(payload.items)) {
+        try {
+          const blogSync = BlogsSyncService.getInstance();
+          const items = payload.items as Array<Record<string, unknown>>;
+          
+          const blogEntries = items.map((item) => ({
+            id: (item.id as string) || (item.url as string),
+            type: 'blog' as const,
+            title: (item.title as string) || 'Untitled',
+            summary: (item.summary as string) || undefined,
+            url: (item.url as string) || '',
+            date: (item.date as string) || new Date().toISOString(),
+            tags: Array.isArray(item.tags) ? (item.tags as string[]) : ['medium'],
+            source: 'medium' as const,
+            metadata: item.metadata as Record<string, unknown> | undefined,
+          }));
+          
+          const syncResult = blogSync.addBlogs(blogEntries);
+          fastify.log.info(
+            { syncResult },
+            'Blogs synced from webhook'
+          );
+        } catch (syncError) {
+          fastify.log.error(
+            { syncError },
+            'Failed to sync blogs.json from webhook'
+          );
+          // Continue anyway - webhook processing succeeds even if blog sync fails
+        }
+      }
+
       return reply.status(202).send({
         accepted: true,
         id: webhookId,
