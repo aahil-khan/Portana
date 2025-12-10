@@ -2,6 +2,24 @@ import { FastifyInstance } from 'fastify';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
+function normalizeTechnologies(input: unknown): string[] {
+  if (!input) return [];
+  if (Array.isArray(input)) {
+    return input.filter((v): v is string => typeof v === 'string');
+  }
+  if (typeof input === 'object') {
+    return Object.values(input as Record<string, unknown>).flatMap((value) =>
+      Array.isArray(value)
+        ? value.filter((v): v is string => typeof v === 'string')
+        : typeof value === 'string'
+          ? [value]
+          : []
+    );
+  }
+  if (typeof input === 'string') return [input];
+  return [];
+}
+
 /**
  * Resume data interface
  */
@@ -106,7 +124,7 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
           title: project.name,
           subtitle: project.subtitle,
           description: project.description,
-          tags: project.technologies,
+          tags: normalizeTechnologies(project.technologies),
           highlights: project.highlights,
           link: project.link || '#',
           github: project.github || '#',
