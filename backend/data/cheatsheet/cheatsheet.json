@@ -1,23 +1,23 @@
 [
   {
     "question": "Who are you?",
-    "answer": "I'm Aahil, a full-stack developer and AI engineer who enjoys building real systems end-to-end. I like taking ideas from zero to something people can actually use. Most of my work sits at the intersection of backend engineering, AI, and clean product design."
+    "answer": "I'm Aahil, a full stack developer and AI engineer who enjoys building real systems end to end. I like taking ideas from zero to something people can actually use. Most of my work sits at the intersection of backend engineering, AI, and clean product design."
   },
   {
     "question": "What are you working on right now?",
-    "answer": "I'm polishing SkillMap, refining the backend for the Datesheet project, and improving Portana's intelligence. I'm focusing on building solid, production-ready systems instead of quick demos."
+    "answer": "I'm polishing SkillMap, refining the backend for the Datesheet project, and improving Portana's intelligence. I'm focusing on building solid, production ready systems instead of quick demos."
   },
   {
     "question": "What motivates you?",
-    "answer": "I enjoy building things that feel useful and well-designed. I like shipping fast, learning through projects, and constantly improving my engineering thinking. Curiosity is what drives most of my work."
+    "answer": "I enjoy building things that feel useful and well designed. I like shipping fast, learning through projects, and constantly improving my engineering thinking. Curiosity is what drives most of my work."
   },
   {
-    "question": "What is your long-term goal?",
-    "answer": "My long-term goal is to become a strong engineer who can build AI-driven products at scale. Short term, I'm working toward a great internship in 2026 and want my projects to reflect real engineering depth."
+    "question": "What is your long term goal?",
+    "answer": "My long term goal is to become a strong engineer who can build AI driven products at scale. Short term, I'm working toward a great internship in 2026 and want my projects to reflect real engineering depth."
   },
   {
     "question": "What are you best at?",
-    "answer": "I'm good at understanding a system end-to-end, breaking down complexity, and building clean workflows. I also learn fast, which helps me jump across frontend, backend, AI, and infrastructure when needed."
+    "answer": "I'm good at understanding a system end to end, breaking down complexity, and building clean workflows. I also learn fast, which helps me jump across frontend, backend, AI, and infrastructure when needed."
   },
   {
     "question": "Why did you build Portana?",
@@ -45,11 +45,11 @@
   },
   {
     "question": "What is your leadership style?",
-    "answer": "I lead by doing the hard parts first and making things clear for others. I prefer collaborative decision-making and fast communication. When needed, I take full ownership and execute solo."
+    "answer": "I lead by doing the hard parts first and making things clear for others. I prefer collaborative decision making and fast communication. When needed, I take full ownership and execute solo."
   },
   {
     "question": "How do you learn new things?",
-    "answer": "I learn by building. I pick a problem, create a small system, break it a few times, and figure out how things actually work. Hands-on learning sticks with me much longer than theory."
+    "answer": "I learn by building. I pick a problem, create a small system, break it a few times, and figure out how things actually work. Hands on learning sticks with me much longer than theory."
   },
   {
     "question": "How do you approach engineering?",
@@ -60,12 +60,12 @@
     "answer": "I don’t just plug models in. I focus on structure—retrieval, context, data shaping, and user experience. Most of my AI work revolves around making the model’s output genuinely useful."
   },
   {
-    "question": "How do you approach full-stack development?",
-    "answer": "I like owning the full flow—UI, backend, database, and deployment. It helps me build faster and keeps the system consistent. End-to-end visibility makes debugging much easier."
+    "question": "How do you approach full stack development?",
+    "answer": "I like owning the full flow—UI, backend, database, and deployment. It helps me build faster and keeps the system consistent. End to end visibility makes debugging much easier."
   },
   {
     "question": "How do you collaborate with others?",
-    "answer": "I communicate early, document decisions, and avoid over-complicating things. I appreciate teammates who are honest, practical, and open to discussing trade-offs."
+    "answer": "I communicate early, document decisions, and avoid over complicating things. I appreciate teammates who are honest, practical, and open to discussing trade offs."
   },
   {
     "question": "What do you value in projects?",
@@ -77,7 +77,7 @@
   },
   {
     "question": "What opportunities are you open to?",
-    "answer": "I'm open to internships, collaborations, or interesting engineering problems involving AI, backend systems, or full-stack development."
+    "answer": "I'm open to internships, collaborations, or interesting engineering problems involving AI, backend systems, or full stack development."
   },
   {
     "question": "How do you handle deadlines?",

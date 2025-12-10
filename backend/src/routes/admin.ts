@@ -7,6 +7,7 @@ import {
 import { getLogBuffer, clearLogBuffer } from '../utils/logger.js';
 import { getGitHubIngestor } from '../services/github-ingestor.js';
 import { getResumeIngestor } from '../services/resume-ingestor.js';
+import { getCheatsheetIngestor } from '../services/cheatsheet-ingestor.js';
 import { getMediumIngestor } from '../services/medium-ingestor.js';
 import { BlogsSyncService } from '../webhooks/services/blogs-sync.js';
 import { createLogger } from '../utils/logger.js';
@@ -799,6 +800,52 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       const errorMessage =
         error instanceof Error ? error.message : 'Resume ingestion failed';
       log('error', 'Resume ingestion error', { error: errorMessage });
+      return reply.code(500).send({
+        success: false,
+        error: errorMessage,
+        logs,
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/ingest/cheatsheet
+   * Ingest personal cheatsheet Q&A
+   */
+  fastify.post('/api/admin/ingest/cheatsheet', async (_request, reply) => {
+    const logs: Array<{ level: string; msg: string; meta?: unknown }> = [];
+    const log = (level: 'info' | 'warn' | 'error', msg: string, meta?: unknown) => {
+      logs.push({ level, msg, meta });
+      // Also emit to main logger (meta casted to any to satisfy logger signature)
+      const metaSafe = meta as any;
+      if ((logger as any)[level]) {
+        (logger as any)[level](msg, metaSafe);
+      } else {
+        logger.info(msg, metaSafe);
+      }
+    };
+
+    try {
+      const ingestor = getCheatsheetIngestor();
+
+      log('info', 'Starting cheatsheet ingestion');
+      const result = await ingestor.ingest();
+
+      log('info', 'Cheatsheet ingestion complete', {
+        totalChunks: result.totalChunks,
+        totalVectors: result.totalVectors,
+      });
+
+      return reply.code(200).send({
+        success: true,
+        message: `Successfully ingested cheatsheet - ${result.totalVectors} vectors created`,
+        data: result,
+        logs,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Cheatsheet ingestion failed';
+      log('error', 'Cheatsheet ingestion error', { error: errorMessage });
       return reply.code(500).send({
         success: false,
         error: errorMessage,
