@@ -36,6 +36,9 @@ COPY --from=builder /app/dist ./dist
 # Copy public folder with resume PDF
 COPY backend/public ./public
 
+# Copy data assets (Q&A JSONs, cheatsheets, etc.)
+COPY backend/data ./data
+
 # Copy resume.json, blogs.json, and extensions.txt from repo root
 COPY resume.json ./resume.json
 COPY blogs.json ./blogs.json
