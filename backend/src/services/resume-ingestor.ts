@@ -1,7 +1,11 @@
 import { readFileSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve, join, dirname } from 'path';
 import { readdirSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { getEmbedder } from './embedder.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { getQdrant } from '../vector/index.js';
 import type { VectorPoint } from '../vector/index.js';
 import { createLogger } from '../utils/logger.js';
