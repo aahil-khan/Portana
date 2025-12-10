@@ -1,6 +1,5 @@
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync, existsSync } from 'fs';
 import { resolve, join, dirname } from 'path';
-import { readdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { getEmbedder } from './embedder.js';
 
@@ -98,9 +97,31 @@ export class ResumeIngestor {
    */
   private loadQAFiles(): Map<string, QAEntry[]> {
     const qaMap = new Map<string, QAEntry[]>();
-    
-    // Data directory is now in backend/data/
-    const qaDir = resolve(__dirname, '../..', 'data', 'resume ingestion', 'jsons');
+
+    // Try multiple candidate paths to handle different CWDs in deploy
+    const possiblePaths = [
+      // when process.cwd() is repo root
+      resolve(process.cwd(), 'backend', 'data', 'resume ingestion', 'jsons'),
+      resolve(process.cwd(), 'data', 'resume ingestion', 'jsons'),
+      // when process.cwd() is backend/
+      resolve(process.cwd(), 'data', 'resume ingestion', 'jsons'),
+      // relative to compiled dist location
+      resolve(__dirname, '../../data', 'resume ingestion', 'jsons'),
+      resolve(__dirname, '../data', 'resume ingestion', 'jsons'),
+    ];
+
+    let qaDir: string | null = null;
+    for (const p of possiblePaths) {
+      if (existsSync(p)) {
+        qaDir = p;
+        break;
+      }
+    }
+
+    if (!qaDir) {
+      logger.warn('Q&A directory not found. Searched: ' + possiblePaths.join(' | '));
+      return qaMap;
+    }
 
     try {
       const files = readdirSync(qaDir).filter((f) => f.endsWith('.json'));
