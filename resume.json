@@ -146,7 +146,7 @@
       "name": "Portana",
       "subtitle": "AI-Powered Interactive Portfolio",
       "technologies": ["Next.js", "Fastify", "TypeScript", "Qdrant", "GPT-4o", "Docker", "GitHub Actions", "n8n", "Umami Analytics"],
-      "description": "An AI-driven portfolio with conversational abilities and dynamic content rendering.",
+      "description": "An AI-driven portfolio with conversational abilities and dynamic content rendering. You're using it right now :)",
       "highlights": [
         "Built modular API system for real-time interactions",
         "Added n8n pipelines for auto-syncing GitHub/LinkedIn activity",
