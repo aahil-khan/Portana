@@ -359,6 +359,9 @@ Respond ONLY as JSON. No markdown. Pure JSON only.`;
 
       // Save assistant response to memory
       await this.saveMessage(sessionId, 'assistant', fullResponse);
+
+      // Return the full response for detection
+      return fullResponse;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Chat streaming failed: ${message}`);

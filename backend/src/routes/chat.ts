@@ -35,18 +35,37 @@ export async function registerChatRoutes(fastify: FastifyInstance): Promise<void
       reply.raw.write('data: {"status": "connected"}\n\n');
 
       try {
+        let fullResponse = '';
+        let streamedChunks = false;
+        
         // Stream the chat response
         for await (const chunk of chat.streamChat({
           sessionId,
           message,
           onboardingSessionId,
         })) {
-          // Send each chunk as an SSE message
-          reply.raw.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+          fullResponse += chunk;
+          streamedChunks = true;
+          
+          // Stream each chunk to the client
+          reply.raw.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`);
+        }
+
+        // After streaming completes, parse the full response
+        if (streamedChunks && fullResponse.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(fullResponse);
+            
+            // Send the parsed response with metadata
+            reply.raw.write(`data: ${JSON.stringify({ type: 'complete', data: parsed })}\n\n`);
+          } catch (parseError) {
+            // If parsing fails, just send the raw content
+            console.error('Failed to parse streamed response:', parseError);
+          }
         }
 
         // Send completion message
-        reply.raw.write('data: {"status": "complete"}\n\n');
+        reply.raw.write('data: {"status": "done"}\n\n');
         reply.raw.end();
       } catch (error) {
         const errorMessage =
