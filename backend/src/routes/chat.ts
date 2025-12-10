@@ -26,10 +26,13 @@ export async function registerChatRoutes(fastify: FastifyInstance): Promise<void
 
       const chat = getChat();
 
-      // Set up streaming response with Server-Sent Events
+      // Set up streaming response with Server-Sent Events and CORS headers
       reply.header('Content-Type', 'text/event-stream');
       reply.header('Cache-Control', 'no-cache');
       reply.header('Connection', 'keep-alive');
+      reply.header('Access-Control-Allow-Origin', '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
       // Send initial connection message
       reply.raw.write('data: {"status": "connected"}\n\n');

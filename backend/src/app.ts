@@ -53,10 +53,11 @@ export async function createApp(): Promise<FastifyInstance> {
 
   // Register CORS plugin (will be configured dynamically with config.json)
   fastify.register(fastifyCors, {
-    origin: '*', // Will be overridden by middleware
+    origin: true, // Allow all origins in development, will be restricted in production
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type'],
   });
 
   // Register rate limiting
