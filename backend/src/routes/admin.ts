@@ -764,13 +764,25 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
    * Ingest resume from resume.md file
    */
   fastify.post('/api/admin/ingest/resume', async (_request, reply) => {
+    const logs: Array<{ level: string; msg: string; meta?: unknown }> = [];
+    const log = (level: 'info' | 'warn' | 'error', msg: string, meta?: unknown) => {
+      logs.push({ level, msg, meta });
+      // Also emit to main logger (meta casted to any to satisfy logger signature)
+      const metaSafe = meta as any;
+      if ((logger as any)[level]) {
+        (logger as any)[level](msg, metaSafe);
+      } else {
+        logger.info(msg, metaSafe);
+      }
+    };
+
     try {
       const ingestor = getResumeIngestor();
 
-      logger.info('Starting resume ingestion...');
+      log('info', 'Starting resume ingestion');
       const result = await ingestor.ingest();
 
-      logger.info('Resume ingestion complete', {
+      log('info', 'Resume ingestion complete', {
         totalChunks: result.totalChunks,
         totalVectors: result.totalVectors,
         resumeChunks: result.resumeChunks,
@@ -781,14 +793,16 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
         success: true,
         message: `Successfully ingested resume - ${result.totalVectors} vectors created (${result.resumeChunks} resume + ${result.qaChunks} Q&A)`,
         data: result,
+        logs,
       });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Resume ingestion failed';
-      logger.error('Resume ingestion error', { error: errorMessage });
+      log('error', 'Resume ingestion error', { error: errorMessage });
       return reply.code(500).send({
         success: false,
         error: errorMessage,
+        logs,
       });
     }
   });
