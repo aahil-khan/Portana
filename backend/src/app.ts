@@ -17,6 +17,15 @@ import { registerMiscRoutes } from './routes/misc.js';
 export async function createApp(): Promise<FastifyInstance> {
   const env = loadEnv();
 
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
+    'http://localhost:3000,https://portana.vercel.app').split(',').map((o) => o.trim()).filter(Boolean);
+
+  const isOriginAllowed = (origin?: string) => {
+    if (!origin) return true; // allow same-origin/non-browser
+    if (allowedOrigins.includes('*')) return true;
+    return allowedOrigins.includes(origin);
+  };
+
   // Create Fastify instance with Pino logger
   const fastify = Fastify({
     logger: {
@@ -51,19 +60,29 @@ export async function createApp(): Promise<FastifyInstance> {
     },
   });
 
-  // Register CORS plugin (will be configured dynamically with config.json)
+  // Register CORS plugin with allow-list (default: localhost + production domain)
   fastify.register(fastifyCors, {
-    origin: true, // Allow all origins in development, will be restricted in production
+    origin: (origin, cb) => {
+      if (isOriginAllowed(origin || '')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Origin not allowed by CORS'), false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposedHeaders: ['Content-Type'],
   });
 
-  // Safety net: ensure CORS headers are always present (especially for SSE)
+  // Safety net: ensure CORS headers are present on all responses (incl. SSE)
   fastify.addHook('onSend', async (request, reply) => {
-    const origin = request.headers.origin || '*';
-    reply.header('Access-Control-Allow-Origin', origin);
+    const originHeader = request.headers.origin as string | undefined;
+    const chosenOrigin = isOriginAllowed(originHeader)
+      ? originHeader || allowedOrigins[0] || '*'
+      : allowedOrigins[0] || '*';
+
+    reply.header('Access-Control-Allow-Origin', chosenOrigin);
     reply.header('Vary', 'Origin');
     reply.header('Access-Control-Allow-Credentials', 'true');
     reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');

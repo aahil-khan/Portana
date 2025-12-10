@@ -1,10 +1,21 @@
 import { FastifyInstance } from 'fastify';
 import { getChat } from '../chat/index.js';
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://portana.vercel.app')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const pickOrigin = (origin?: string) => {
+  if (allowedOrigins.includes('*')) return origin || '*';
+  if (origin && allowedOrigins.includes(origin)) return origin;
+  return allowedOrigins[0] || '*';
+};
+
 export async function registerChatRoutes(fastify: FastifyInstance): Promise<void> {
   // Preflight handler for streaming route
   fastify.options('/api/chat/ask', async (request, reply) => {
-    const origin = request.headers.origin || '*';
+    const origin = pickOrigin(request.headers.origin as string | undefined);
     reply
       .header('Access-Control-Allow-Origin', origin)
       .header('Vary', 'Origin')
@@ -39,7 +50,7 @@ export async function registerChatRoutes(fastify: FastifyInstance): Promise<void
       const chat = getChat();
 
       // Set up streaming response with Server-Sent Events and CORS headers
-      const origin = request.headers.origin || '*';
+      const origin = pickOrigin(request.headers.origin as string | undefined);
       reply.header('Content-Type', 'text/event-stream');
       reply.header('Cache-Control', 'no-cache');
       reply.header('Connection', 'keep-alive');
