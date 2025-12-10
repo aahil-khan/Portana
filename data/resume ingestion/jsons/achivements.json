@@ -1,0 +1,4 @@
+{
+  "question": "Tell me about winning the Innovation Award at the Agentic AI Hackathon 2025.",
+  "answer": "I won the award for SkillMap, an AI driven platform that combined LLM based resume parsing with semantic embeddings to generate personalized learning paths. The judges appreciated the production ready architecture—vector search, structured skill taxonomy, and reliable LLM pipelines. They felt the project had clear real world utility, not just hackathon level polish."
+}

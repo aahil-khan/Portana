@@ -1,0 +1,26 @@
+[
+  {
+    "question": "What was your main contribution to Thapar Edutube as a Team Lead and Full Stack Engineer?",
+    "answer": "I initially owned the backend architecture while collaborating with a designer and a separate frontend developer. When the frontend engineer left, I took over full stack development and delivered all core modules—admin dashboards, course structure, search, and watch history—while maintaining system design consistency."
+  },
+  {
+    "question": "How did you lead the team during the development of Thapar Edutube?",
+    "answer": "Early on, I coordinated backend frontend integration, API contracts, and design alignment. After the frontend teammate left, I restructured the workflow and took full development responsibility, while still keeping the designer involved for UX iterations so the project stayed on track."
+  },
+  {
+    "question": "What measurable impact did your work on Thapar Edutube create?",
+    "answer": "Redis caching improved search and course loading speeds by over 40%, and the admin tools drastically reduced faculty effort in organizing and uploading lectures. Taking over full stack development ensured the platform shipped on time despite team changes."
+  },
+  {
+    "question": "What was your main contribution to the Datesheet Generator project as a Backend Engineer?",
+    "answer": "I re architected the project from session based logic to a structured MySQL backed system with proper authentication and multi user support. I redesigned the scheduling workflow to be more reliable, modular, and aligned with actual university exam rules."
+  },
+  {
+    "question": "How did you ensure backend reliability while building the Datesheet Generator?",
+    "answer": "I introduced a controller service architecture, added consistent validation and error handling, and implemented savepoint based progress tracking. This made the system far more resilient and easier for faculty to use iteratively without losing work."
+  },
+  {
+    "question": "What metrics improved because of your work on the Datesheet Generator?",
+    "answer": "Scheduling conflicts dropped by around 40% thanks to better validation and workflow restructuring. Multi user support reduced dependency on manual coordination, and the groundwork for PeopleSoft integration will automate most data imports moving forward."
+  }
+]

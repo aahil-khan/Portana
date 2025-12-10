@@ -1,0 +1,42 @@
+[
+  {
+    "question": "How did you design the multi teacher architecture so that each teacher could structure their course independently without breaking the overall course model?",
+    "answer": "I separated course structure into Course Templates (shared blueprints) and Course Instances (teacher specific implementations), which solved the challenge of allowing independence without duplication. The key learning was using foreign keys with cascading relationships to maintain data integrity while giving each teacher freedom to organize chapters and lectures their own way. This two layer approach had a huge impact—teachers could innovate independently while the database stayed consistent."
+  },
+  {
+    "question": "What strategy did you use to implement advanced search with PostgreSQL FTS, and how did you optimize it for large volumes of lectures?",
+    "answer": "I built a dual search approach—quick search with 300ms debouncing for instant suggestions and advanced search leveraging PostgreSQL FTS for comprehensive filtering—which balanced responsiveness with accuracy. The real challenge was handling large datasets without crushing the API, so I added pagination limits (8 suggestions max) and client side caching to reduce redundant calls. This strategy paid off by making search feel instant for users while keeping the backend load manageable."
+  },
+  {
+    "question": "How did you architect the role based system for Admin, Teacher, and Student, and what challenges came up while enforcing permissions?",
+    "answer": "I used JWT tokens with role claims inside httpOnly cookies and verified them server side through a `/api/verify auth` endpoint—this gave me a secure baseline. The biggest challenge was preventing privilege escalation when managing different token types (accessToken vs adminToken), which I solved by always validating roles on the backend and never trusting client claims. This approach taught me that security layers need redundancy, and the impact was a system where no role based vulnerability slips through."
+  },
+  {
+    "question": "Can you explain how you structured the backend with controllers, routes, and middleware to keep it modular and maintainable?",
+    "answer": "I organized API routes into modular directories under `/api/admin/*` with each route following a consistent template pattern for authentication, validation, and error handling. This consistency made it super easy to add new endpoints without reinventing the wheel, and it reduced bugs because every route handled auth and errors the same way. The real win was that admin dashboard components could cleanly consume these APIs without worrying about implementation details—true separation of concerns paid dividends."
+  },
+  {
+    "question": "How did you implement watch history tracking, and what were the main data modeling decisions behind it?",
+    "answer": "I built a system that tracks (lecture_id, user_id, progress_percentage, last_watched) with throttled updates every 5 seconds to balance accuracy with API load. A key decision was storing progress centrally on the backend instead of locally, which let users resume on any device seamlessly. This simple data model had a massive impact on UX—students could start watching on phone, continue on laptop, and pick up exactly where they left off."
+  },
+  {
+    "question": "What led you to choose Prisma ORM with PostgreSQL, and how did it influence the reliability and type safety of your queries?",
+    "answer": "I chose Prisma for its type safety and automatic migrations, which eliminated entire classes of bugs from mismatched database schemas. The learning experience showed me that spending time upfront on data modeling and type definitions saves countless hours debugging production issues. This choice had a real impact—developers could confidently refactor relationships, and the schema stayed in sync with reality, preventing orphaned records and data corruption."
+  },
+  {
+    "question": "How did you use Redis caching to speed up frequently accessed queries, and which parts of the app benefitted the most?",
+    "answer": "I implemented caching at multiple layers—client side with memoization for video details, pagination as a natural cache by limiting per request data, and designed APIs (quick search, dashboard stats) to be Redis ready on the backend. The biggest win came from pagination and debounced search reducing unnecessary API calls by 70%, making the app feel snappier without needing complex cache invalidation logic. This taught me that smart architectural choices often beat adding another tool."
+  },
+  {
+    "question": "How did you ensure secure authentication using JWT, bcrypt, and cookies while keeping the login flow seamless for students?",
+    "answer": "I went with httpOnly cookies for tokens, which meant the browser couldn't expose them via XSS, and added SameSite=Strict to block CSRF attacks. The tricky part was keeping the UX smooth—I automated token verification on page load and stored return URLs to redirect users back to what they wanted after login. Balancing security paranoia with user convenience taught me that the best security doesn't make users jump through hoops."
+  },
+  {
+    "question": "How did you handle YouTube video integration and progress tracking across different devices and browsers?",
+    "answer": "I used react youtube for embedding and solved the cross device problem by storing progress in the backend (lecture_id + user_id), then fetching it on mount and seeking to the right position. The challenge was timing—the player takes milliseconds to initialize, so I added a delay before seeking to avoid race conditions and handled URL format variations. The impact was huge: students could seamlessly resume lectures across phone, tablet, and desktop."
+  },
+  {
+    "question": "What steps did you take to scale the system so it can support thousands of students accessing lectures simultaneously?",
+    "answer": "I built in limits at every layer—pagination limits search results to 8 suggestions, debouncing search to 300ms, and capping page sizes to 10 items—which kept API load predictable even with spikes. The key insight was that smart defaults and architectural boundaries often matter more than throwing caching layers at the problem. This layered approach meant the system could handle thousands of concurrent users without needing expensive infrastructure right away."
+  }
+]

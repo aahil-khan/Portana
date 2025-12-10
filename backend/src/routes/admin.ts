@@ -773,11 +773,13 @@ export async function registerAdminRoutes(fastify: FastifyInstance): Promise<voi
       logger.info('Resume ingestion complete', {
         totalChunks: result.totalChunks,
         totalVectors: result.totalVectors,
+        resumeChunks: result.resumeChunks,
+        qaChunks: result.qaChunks,
       });
 
       return reply.code(200).send({
         success: true,
-        message: `Successfully ingested resume - ${result.totalVectors} vectors created`,
+        message: `Successfully ingested resume - ${result.totalVectors} vectors created (${result.resumeChunks} resume + ${result.qaChunks} Q&A)`,
         data: result,
       });
     } catch (error) {

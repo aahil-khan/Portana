@@ -1,0 +1,42 @@
+[
+  {
+    "question": "How did you design the multi tenant architecture to ensure strict tenant isolation across authentication, database queries, and inter service communication?",
+    "answer": "I enforced tenant isolation at three critical layers: JWT (staff tokens embed tenant_id; customers pass it via QR code), database (every table has a tenant_id column with mandatory filters in Prisma queries), and Kafka (events are partitioned by tenant_id to ensure sequential processing per tenant). The biggest challenge was preventing accidental data leakage—I built the TenantGuard middleware to extract tenant_id from context and fail fast if it's missing, turning isolation into a compile time contract. This defense in depth approach means even if one service is compromised, it cannot access another tenant's data."
+  },
+  {
+    "question": "What was the reasoning behind splitting the system into eight microservices, and how did you decide the boundaries for each service?",
+    "answer": "I split the system using domain driven design—each service owns a business capability (auth, menu, orders, payments) and a distinct Kafka topic to reduce coupling. Early on, I learned that tight coupling between services made testing and debugging a nightmare, so I prioritized deployment independence; now a team can ship Payment Service without touching Menu Service. The API Gateway acts as a single entry point for JWT validation, eliminating duplication and letting services focus on their domain logic rather than auth boilerplate."
+  },
+  {
+    "question": "How did you implement event driven communication using Kafka, and what challenges did you face in guaranteeing consistency between services?",
+    "answer": "I chose Kafka for its durability and offset replay capability, but the biggest challenge was handling at least once delivery without creating duplicate orders or inventory entries. I solved this by embedding idempotency keys in events and using database transactions—if a service crashes after consuming an event, Kafka replays it, but the database deduplicates based on the key. Partitioning by tenant_id ensures each tenant's events are processed in order, and I expose consumer lag in Prometheus to catch processing bottlenecks early."
+  },
+  {
+    "question": "How did you structure JWT authentication and role based access so that managers, waiters, kitchen staff, and customers all had distinct privileges?",
+    "answer": "I designed two JWT flavors: staff tokens embed role and tenant_id, while customer tokens are minimal (just the customer ID). Each controller uses a combination of JwtGuard (validates signature) and RolesGuard (checks role against @Roles decorator) to restrict access. The key learning was that role based access control must be enforced at the endpoint level, not in the service—this makes it obvious who can do what and catches authorization bugs during code review."
+  },
+  {
+    "question": "What techniques did you use to implement real time updates for orders and kitchen notifications using WebSockets?",
+    "answer": "I used Socket.IO to bridge Kafka and WebSocket connections—when a Kafka event arrives (e.g., order.created), the Notification Service emits it to sockets in the matching tenant and role. The tricky part was isolating connections by tenant_id and role to prevent data leakage; I track connections in a map keyed by (tenant_id, role) and only broadcast to authorized sockets. For reliability, customers fall back to polling /api/customers/my orders if WebSocket latency is too high, ensuring no impact if the notification service restarts."
+  },
+  {
+    "question": "How did you integrate Razorpay payments and handle webhook events reliably while supporting both online and cash based workflows?",
+    "answer": "I integrated Razorpay by creating an order on the backend and returning the order ID to the frontend; once the customer pays, Razorpay webhooks hit our /webhook endpoint. The critical challenge was idempotency—if the webhook is retried, we can't process the same payment twice, so I use Razorpay's order ID as a deduplication key. For cash payments, I create the Payment record with status='AWAITING_CASH_PAYMENT' and let staff confirm receipt, treating both flows identically downstream. This unified approach meant Analytics and Inventory services don't care whether the payment was online or cash."
+  },
+  {
+    "question": "What caching strategy did you implement with Redis, and how did you ensure proper invalidation when menus or categories changed?",
+    "answer": "I cache menus by tenant and category in Redis with a 5 minute TTL to reduce database queries; individual item details get their own cache key. The lesson I learned early was that TTL based expiry is unreliable—customers would see stale menus for up to 5 minutes after changes. Now I invalidate eagerly: whenever a menu item is updated or deleted, I blast away all related cache keys immediately. For OTP, I use a shorter TTL (3 minutes) and validate during verification, which is more secure than caching the OTP itself."
+  },
+  {
+    "question": "How did you use Prometheus and Grafana to build an observability layer, and what were the most useful metrics you exposed?",
+    "answer": "I exposed HTTP latency, Kafka consumer lag, database query counts, JWT validation failures, and cache hit rates to Prometheus, then visualized them in Grafana dashboards. The most valuable metrics turned out to be Kafka consumer lag (caught processing bottlenecks before they impacted customers) and JWT validation failures (early warning of token mismatches or clock skew between services). Health endpoints for each service report dependency status (DB, Redis, Kafka), letting us quickly spot if a crashed Kafka broker is cascading failures across the system."
+  },
+  {
+    "question": "Can you describe your approach to testing across microservices, and how your Jest suites validated cross service workflows?",
+    "answer": "I structured tests in three layers: unit tests mock everything and run fast, integration tests use a real test database and catch subtle Prisma bugs, and cross service tests (via Postman) validate the full happy path. The key insight was that unit tests alone miss tenant isolation bugs—my Jest suites now explicitly verify that database queries include tenant_id filters and that Kafka events are partitioned correctly. Running `npm test` across all workspaces catches regressions early; the main limitation is mocking Razorpay webhooks, which I'm planning to replace with a test harness approach."
+  },
+  {
+    "question": "How did you design the Docker + Nginx deployment setup to support both local development and production environments with minimal differences?",
+    "answer": "I containerized all services identically and orchestrated them with docker compose.yml, so `docker compose up  d   build` brings the entire stack online with zero manual setup. Environment variables (JWT_SECRET, RAZORPAY_KEY_ID) are injected at runtime from a .env file, letting the same containers run in dev and production with different configs. The biggest win was health checks on each container—if a service crashes, Docker automatically restarts it, eliminating a whole class of ops issues. For production, I can swap the .env values and point to managed AWS databases without changing a single line of code."
+  }
+]

@@ -62,39 +62,85 @@
   "projects": [
     {
       "name": "SkillMap",
-      "subtitle": "Personalized Learning Engine",
-      "technologies": ["Next.js", "Express", "Node.js", "Qdrant", "GPT-4", "GitHub Actions"],
-      "description": "AI-powered platform that generates personalized learning paths and tracks progress across coding platforms.",
+      "subtitle": "Personalized Learning & Peer Analytics Platform",
+      "description": "A peer-learning and skill analytics platform that helps technical learners understand their strengths, identify skill gaps, and connect with peers on similar learning journeys. The backend ingests resume PDFs and LeetCode profiles, structures them using LLMs, embeds them semantically in a vector database, and enables intelligent skill-gap analysis and peer matching.",
+      "technologies": {
+        "backend": ["Node.js", "Express.js"],
+        "ai_integration": ["OpenAI API (GPT-3.5-turbo, embeddings)"],
+        "database": ["Supabase (PostgreSQL)", "Qdrant (vector database)"],
+        "file_processing": ["PDF parsing", "Multer"],
+        "auth": ["Supabase Auth", "JWT authentication"],
+        "middleware": ["Express rate-limit"],
+        "containerization": ["Docker", "Docker Compose"],
+        "api": ["RESTful JSON APIs"],
+        "dev_tools": ["npm", "Git"]
+      },
       "highlights": [
-        "Embedded skill taxonomies in Qdrant for semantic search and peer skill matching",
-        "Used GPT-4 for automated gap analysis and customized upskilling roadmaps",
-        "Added LeetCode tracking and automated recommendation flows"
+        "End-to-end backend design and implementation including REST APIs, data modeling, and secure authentication.",
+        "LLM-powered resume parsing with retry logic, moderation checks, and fallback model handling.",
+        "Custom skill taxonomy covering 50+ technical skills across DSA, Web Development, Databases, AI/ML, DevOps, and Software Engineering.",
+        "Dual skill profiling combining structured resume data with LeetCode competitive programming statistics.",
+        "Semantic search and peer matching using vector embeddings stored in Qdrant.",
+        "Automated skill-gap analysis with AI-generated personalized learning paths.",
+        "LeetCode integration with category-wise problem-solving insights segmented by difficulty.",
+        "Production-ready system with authentication, rate limiting, robust file handling, comprehensive error handling, logging, and Docker-based deployment.",
+        "ATS scoring microservice to evaluate job-fit analysis for candidates."
       ],
       "link": "https://skillmap-five.vercel.app",
       "github": "https://github.com/aahil-khan/skillmap"
     },
     {
-      "name": "Thapar Edutube",
+      "name": "Thapar EduTube",
       "subtitle": "Thapar Exclusive Lecture Archive",
-      "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS"],
-      "description": "University-wide lecture archive serving 10,000+ students.",
+      "description": "A full-stack digital learning platform built for Thapar University, featuring an admin panel for managing courses, teachers, lectures, and students, along with a student interface for browsing and watching lectures. Supports multi-teacher course structures, watch-history tracking, secure authentication, and optimized search across courses and lectures.",
+      "technologies": {
+        "frontend": ["Next.js 15", "React 19", "Tailwind CSS", "Material UI"],
+        "backend": ["Node.js", "Express.js", "PostgreSQL", "Prisma ORM"],
+        "search_and_performance": ["PostgreSQL Full-Text Search", "Redis"],
+        "auth": ["JWT Authentication", "bcrypt", "Secure Cookies"],
+        "infrastructure_and_tools": ["Axios", "Nodemon", "Prisma CLI"]
+      },
       "highlights": [
-        "Led team of 3 developers across frontend and backend",
-        "Implemented lecture ingestion workflows and faculty coordination process",
-        "Designed admin dashboards and a booking app for recording sessions"
+        "Role-based access system supporting Admin, Teacher, and Student workflows.",
+        "Multi-teacher architecture allowing separate implementations of the same course by different instructors.",
+        "Comprehensive CRUD system for users, teachers, courses, lectures, and chapters.",
+        "YouTube integration enabling seamless video playback and progress tracking.",
+        "Optimized lecture and course search using PostgreSQL FTS.",
+        "Persistent watch-history tracking with timestamps for each lecture.",
+        "Modular backend structure with controllers, routes, middlewares, and centralized error handling.",
+        "Fully responsive frontend with dashboards, course listing, and lecture viewing experience.",
+        "Redis caching layer for accelerating frequently accessed queries.",
+        "Prisma-based database migrations and type-safe query operations."
       ],
       "link": "https://edutube.dctofficethapar.xyz"
     },
     {
       "name": "Intellidine",
       "subtitle": "Microservices-Based Restaurant Management Platform",
-      "technologies": ["Next.js", "Nest.js", "TypeScript", "Docker", "Kafka", "Jest", "GitHub Actions"],
-      "description": "A modular microservices platform for seamless order, inventory, menu, and notification management.",
+      "description": "A multi-tenant SaaS platform for restaurants that digitizes ordering, payments, and in-restaurant operations. Customers scan table-specific QR codes to browse menus, place orders, and pay. Staff interfaces support order management, kitchen operations, and inventory tracking. Built using a microservices architecture with tenant isolation, event-driven communication, and scalable infrastructure.",
+      "technologies": {
+        "backend_and_services": ["TypeScript", "Node.js (NestJS)", "PostgreSQL (Prisma ORM)"],
+        "event_streaming": ["Kafka"],
+        "caching_and_sessions": ["Redis"],
+        "payments_and_communication": ["Razorpay", "MSG91 (SMS/OTP)"],
+        "infrastructure": ["Docker", "Docker Compose", "Nginx"],
+        "monitoring": ["Prometheus", "Grafana"],
+        "testing": ["Jest"]
+      },
       "highlights": [
-        "Designed service boundaries for independent deployability",
-        "Implemented reliable workflows preventing duplicate operations",
-        "Streamlined schemas for maintainability and scaling"
-      ]
+        "Multi-tenant architecture with strict tenant isolation enforced via tenant_id at both JWT and database layers.",
+        "Eight-service microservices architecture: auth, menu, order, payment, inventory, notification, analytics, and discount-engine.",
+        "Event-driven communication between services using Kafka for reliable, scalable message flows.",
+        "JWT authentication with role-based access (MANAGER, WAITER, KITCHEN_STAFF, SUPER_ADMIN) and OTP-based customer login.",
+        "WebSocket support powering real-time order updates and Kitchen Display System (KDS) notifications.",
+        "Razorpay integration with webhook verification and fallback handlers for cash-based workflows.",
+        "Redis caching with automatic invalidation for menu, category, and frequently updated entities.",
+        "Twelve Jest test suites covering critical business workflows across independent services.",
+        "Production-grade observability using Prometheus metrics and Grafana dashboards.",
+        "Dual deployment support: local development via Docker Compose and production via Nginx reverse proxy."
+      ],
+      "link": "https://frontend-intellidine.vercel.app",
+      "github": "https://github.com/aahil-khan/intellidine"
     },
     {
       "name": "Portana",
@@ -106,17 +152,36 @@
         "Added n8n pipelines for auto-syncing GitHub/LinkedIn activity",
         "Implemented vector-powered project insights"
       ],
-      "link": "https://portana.vercel.app"
+      "link": "https://portana.vercel.app",
+      "github": "https://github.com/aahil-khan/portana"
     },
     {
-      "name": "Vehicle Parking App",
-      "subtitle": "Real-Time Parking Management System",
-      "technologies": ["Flask", "Vue.js", "SQLite", "Redis", "Celery"],
-      "description": "Full system supporting JWT auth, role-based dashboards, and real-time occupancy updates.",
+      "name": "Vehicle Parking Management System",
+      "subtitle": "Smart Parking Automation Platform",
+      "description": "A full-stack parking management platform that handles parking lots, spot availability, and vehicle reservations for both admins and end-users. Includes real-time tracking, automated billing, background task processing, email notifications, and data analytics dashboards.",
+      "technologies": {
+        "backend": ["Flask", "Python", "SQLAlchemy ORM", "SQLite"],
+        "frontend": ["Vue.js 2.6", "Vue Router", "Axios", "Chart.js"],
+        "auth": ["JWT (Flask-JWT-Extended)"],
+        "caching_and_queueing": ["Redis"],
+        "background_jobs": ["Celery", "Celery Beat"],
+        "email_service": ["Flask-Mail (Gmail SMTP)"],
+        "api": ["RESTful JSON APIs"],
+        "dev_tools": ["npm", "pip", "Git"]
+      },
       "highlights": [
-        "Used Redis caching and Celery scheduling to reduce DB load and boost responsiveness",
-        "Implemented live occupancy monitoring with automated alerts",
-        "Added scheduled reporting with email notifications"
+        "Multi-tenant architecture supporting unlimited parking lots with isolated management.",
+        "Real-time tracking of parking spot availability across multiple locations.",
+        "Role-based access control (Admin/User) implemented using JWT authentication.",
+        "Dynamic pricing rules with automated billing and invoice generation.",
+        "Celery-powered asynchronous job processing and scheduled tasks via Celery Beat.",
+        "Automated email notifications including reminders and monthly activity reports.",
+        "Redis caching for significantly faster API responses and reduced database load.",
+        "Interactive analytics dashboards built with Chart.js for occupancy and revenue trends.",
+        "CSV export for parking history with automated email delivery to users.",
+        "Structured error handling across all routes with consistent JSON responses.",
+        "Responsive UI built using reusable Vue components with Flexbox and Grid layouts.",
+        "Scalable backend architecture with clear separation of concerns suited for production deployments."
       ]
     }
   ],

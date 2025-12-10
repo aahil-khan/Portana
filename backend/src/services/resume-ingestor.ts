@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, join } from 'path';
+import { readdirSync } from 'fs';
 import { getEmbedder } from './embedder.js';
 import { getQdrant } from '../vector/index.js';
 import type { VectorPoint } from '../vector/index.js';
@@ -41,7 +42,7 @@ interface ResumeJSON {
   }>;
   projects?: Array<{
     name: string;
-    technologies?: string[];
+    technologies?: string[] | Record<string, string[]>;
     description: string;
     highlights?: string[];
     link?: string;
@@ -52,6 +53,11 @@ interface ResumeJSON {
     event?: string;
     organization?: string;
   }>;
+}
+
+interface QAEntry {
+  question: string;
+  answer: string;
 }
 
 const CHUNK_SIZE = 500; // Characters per chunk
@@ -84,6 +90,52 @@ export class ResumeIngestor {
   }
 
   /**
+   * Load Q&A files from data/resume ingestion/jsons directory
+   */
+  private loadQAFiles(): Map<string, QAEntry[]> {
+    const qaMap = new Map<string, QAEntry[]>();
+    const qaDir = resolve(process.cwd(), 'data', 'resume ingestion', 'jsons');
+
+    try {
+      const files = readdirSync(qaDir).filter((f) => f.endsWith('.json'));
+      logger.info(`Found ${files.length} Q&A files in ${qaDir}`);
+
+      for (const file of files) {
+        try {
+          const filePath = join(qaDir, file);
+          const content = readFileSync(filePath, 'utf-8');
+          const qaEntries = JSON.parse(content) as QAEntry[];
+
+          if (!Array.isArray(qaEntries)) {
+            logger.warn(`Skipping ${file}: not an array`);
+            continue;
+          }
+
+          // Validate Q&A structure
+          const validEntries = qaEntries.filter((entry) => {
+            if (!entry.question || !entry.answer) {
+              logger.warn(`Skipping malformed entry in ${file}`);
+              return false;
+            }
+            return true;
+          });
+
+          if (validEntries.length > 0) {
+            qaMap.set(file, validEntries);
+            logger.info(`Loaded ${validEntries.length} Q&A entries from ${file}`);
+          }
+        } catch (error) {
+          logger.warn(`Failed to load ${file}: ${error}`);
+        }
+      }
+    } catch (error) {
+      logger.warn(`Failed to read Q&A directory ${qaDir}: ${error}`);
+    }
+
+    return qaMap;
+  }
+
+  /**
    * Split text into overlapping chunks
    */
   private chunkText(text: string): string[] {
@@ -107,6 +159,52 @@ export class ResumeIngestor {
       chunks.push(currentChunk.trim());
     }
 
+    return chunks;
+  }
+
+  /**
+   * Map Q&A filename to project ID
+   */
+  private getProjectIdFromFilename(filename: string): string {
+    const nameMap: Record<string, string> = {
+      'skillmap.json': 'SkillMap',
+      'edutube.json': 'Thapar EduTube',
+      'intellidine.json': 'Intellidine',
+      'vehicle-parking-app.json': 'Vehicle Parking Management System',
+      'experience.json': 'experience',
+      'achivements.json': 'achievements',
+    };
+    return nameMap[filename] || filename.replace('.json', '');
+  }
+
+  /**
+   * Create Q&A chunks from loaded Q&A files
+   */
+  private createQAChunks(qaMap: Map<string, QAEntry[]>): ChunkedResume[] {
+    const chunks: ChunkedResume[] = [];
+
+    for (const [filename, qaEntries] of qaMap.entries()) {
+      const projectId = this.getProjectIdFromFilename(filename);
+
+      qaEntries.forEach((entry, index) => {
+        const text = `Q: ${entry.question}\nA: ${entry.answer}`;
+        chunks.push({
+          id: `qa-${filename.replace('.json', '')}-${index}`,
+          text,
+          section: 'qa',
+          subsection: projectId,
+          chunkIndex: index,
+          metadata: {
+            section: 'qa',
+            projectId,
+            question: entry.question,
+            answer: entry.answer,
+          },
+        });
+      });
+    }
+
+    logger.info(`Created ${chunks.length} Q&A chunks`);
     return chunks;
   }
 
@@ -198,7 +296,20 @@ export class ResumeIngestor {
       this.resume.projects.forEach((project, projIdx) => {
         // Create a header with project name and context for better searchability
         const projectHeader = `Project: ${project.name}`;
-        const techsLine = project.technologies ? `Technologies: ${project.technologies.join(', ')}` : '';
+        
+        // Handle both array and nested object formats for technologies
+        let techsLine = '';
+        if (project.technologies) {
+          if (Array.isArray(project.technologies)) {
+            techsLine = `Technologies: ${project.technologies.join(', ')}`;
+          } else {
+            // Nested object format: flatten all categories
+            const allTechs = Object.entries(project.technologies)
+              .map(([category, techs]) => `${category}: ${techs.join(', ')}`)
+              .join('; ');
+            techsLine = `Technologies: ${allTechs}`;
+          }
+        }
         
         // Combine everything with clear structure
         const fullProjectText =
@@ -278,38 +389,62 @@ export class ResumeIngestor {
   }
 
   /**
-   * Main ingest method - chunk, embed, and upsert to Qdrant
+   * Main ingest method - delete old data, chunk, embed, and upsert to Qdrant
    */
-  async ingest(): Promise<{ totalChunks: number; totalVectors: number }> {
+  async ingest(): Promise<{ totalChunks: number; totalVectors: number; resumeChunks: number; qaChunks: number }> {
+    const startTime = Date.now();
     try {
       logger.info('Starting resume ingestion...');
 
-      // Create chunks
-      const chunks = await this.createChunks();
-      if (chunks.length === 0) {
+      // Step 1: Delete old resume embeddings
+      logger.info('Deleting old resume embeddings...');
+      const qdrant = getQdrant();
+      const deletedCount = await qdrant.deleteBySource(['resume', 'resume_qa', 'resume_structured']);
+      logger.info(`Deleted ${deletedCount} old vectors`);
+
+      // Step 2: Load Q&A files
+      const qaMap = this.loadQAFiles();
+      const qaChunks = this.createQAChunks(qaMap);
+
+      // Step 3: Create resume chunks
+      const resumeChunks = await this.createChunks();
+      if (resumeChunks.length === 0) {
         throw new Error('No chunks created from resume');
       }
+      logger.info(`Created ${resumeChunks.length} resume chunks and ${qaChunks.length} Q&A chunks`);
 
-      // Embed chunks
-      logger.info(`Embedding ${chunks.length} chunks...`);
+      // Step 4: Merge all chunks
+      const allChunks = [...resumeChunks, ...qaChunks];
+      logger.info(`Total chunks to embed: ${allChunks.length}`);
+
+      // Step 5: Batch embed all chunks
+      logger.info('Starting batch embedding...');
       const embedder = getEmbedder();
       const embeddedChunks: Array<ChunkedResume & { vector: number[] }> = [];
+      const BATCH_SIZE = 100;
 
-      for (const chunk of chunks) {
+      for (let i = 0; i < allChunks.length; i += BATCH_SIZE) {
+        const batch = allChunks.slice(i, i + BATCH_SIZE);
+        const texts = batch.map((c) => c.text);
+
         try {
-          const vector = await embedder.embedText(chunk.text);
-          embeddedChunks.push({ ...chunk, vector });
+          const vectors = await embedder.embedBatch(texts);
+          
+          batch.forEach((chunk, idx) => {
+            embeddedChunks.push({ ...chunk, vector: vectors[idx] });
+          });
+
+          logger.info(`Embedded ${Math.min(i + BATCH_SIZE, allChunks.length)}/${allChunks.length} chunks`);
         } catch (error) {
-          logger.error(`Failed to embed chunk ${chunk.id}: ${error}`);
+          logger.error(`Failed to embed batch starting at index ${i}: ${error}`);
           throw error;
         }
       }
 
       logger.info(`Successfully embedded ${embeddedChunks.length} chunks`);
 
-      // Upsert to Qdrant
+      // Step 6: Upsert to Qdrant
       logger.info('Upserting to Qdrant...');
-      const qdrant = getQdrant();
       const points: VectorPoint[] = embeddedChunks.map((chunk) => ({
         id: chunk.id,
         vector: chunk.vector,
@@ -318,22 +453,27 @@ export class ResumeIngestor {
           section: chunk.section,
           subsection: chunk.subsection || null,
           chunkIndex: chunk.chunkIndex,
-          source: 'resume',
-          projectId: 'resume',
+          source: chunk.section === 'qa' ? 'resume_qa' : 'resume_structured',
+          projectId: chunk.section === 'qa' ? chunk.metadata?.projectId || 'resume' : 'resume',
           projectName: 'Resume - Aahil Khan',
           metadata: chunk.metadata,
         },
       }));
 
       await qdrant.upsert(points);
-      logger.info(`Successfully upserted ${points.length} vectors to Qdrant`);
+      
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+      logger.info(`Successfully upserted ${points.length} vectors to Qdrant in ${duration}s`);
 
       return {
-        totalChunks: chunks.length,
+        totalChunks: allChunks.length,
         totalVectors: points.length,
+        resumeChunks: resumeChunks.length,
+        qaChunks: qaChunks.length,
       };
     } catch (error) {
-      logger.error(`Resume ingestion failed: ${error}`);
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+      logger.error(`Resume ingestion failed after ${duration}s: ${error}`);
       throw error;
     }
   }

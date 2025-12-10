@@ -105,6 +105,55 @@ export class QdrantManager {
     console.log(`Deleted vectors for project: ${projectId}`);
   }
 
+  async deleteBySource(sources: string[]): Promise<number> {
+    if (!this.client) throw new Error('Qdrant not initialized');
+    
+    console.log(`Collecting vectors with sources: ${sources.join(', ')}...`);
+    const idsToDelete: (number | string)[] = [];
+    let offset: number | string | null = null;
+    const scrollLimit = 100;
+
+    // Scroll through all matching vectors to collect IDs
+    while (true) {
+      const scrollResult = await this.client.scroll(this.collectionName, {
+        filter: {
+          should: sources.map((source) => ({
+            key: 'source',
+            match: { value: source },
+          })),
+        },
+        limit: scrollLimit,
+        offset: offset as any,
+        with_payload: false,
+        with_vector: false,
+      } as any);
+
+      if (!scrollResult.points || scrollResult.points.length === 0) break;
+
+      scrollResult.points.forEach((point: any) => {
+        idsToDelete.push(point.id);
+      });
+
+      offset = scrollResult.next_page_offset as any;
+      if (!offset) break;
+    }
+
+    if (idsToDelete.length === 0) {
+      console.log('No vectors found to delete');
+      return 0;
+    }
+
+    console.log(`Deleting ${idsToDelete.length} vectors...`);
+    
+    // Batch delete all collected IDs
+    await this.client.delete(this.collectionName, {
+      points: idsToDelete,
+    } as any);
+
+    console.log(`Successfully deleted ${idsToDelete.length} vectors`);
+    return idsToDelete.length;
+  }
+
   async getStats(): Promise<{ points_count: number; vectors_count: number }> {
     if (!this.client) throw new Error('Qdrant not initialized');
     const collection = await this.client.getCollection(this.collectionName);
