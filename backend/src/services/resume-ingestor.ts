@@ -94,7 +94,9 @@ export class ResumeIngestor {
    */
   private loadQAFiles(): Map<string, QAEntry[]> {
     const qaMap = new Map<string, QAEntry[]>();
-    const qaDir = resolve(process.cwd(), 'data', 'resume ingestion', 'jsons');
+    
+    // Data directory is now in backend/data/
+    const qaDir = resolve(__dirname, '../..', 'data', 'resume ingestion', 'jsons');
 
     try {
       const files = readdirSync(qaDir).filter((f) => f.endsWith('.json'));
