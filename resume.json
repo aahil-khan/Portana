@@ -3,53 +3,59 @@
     "name": "Aahil Khan",
     "email": "aahilminookhan@gmail.com",
     "phone": "+91 8979884490",
-    "location": "Patiala, India"
+    "location": "Patiala, India",
+    "linkedin": "https://linkedin.com/in/aahil-khan",
+    "github": "https://github.com/aahil-khan",
+    "portfolio": "https://portana.vercel.app"
   },
-  "summary": "Full-stack developer and AI enthusiast with proven experience delivering scalable web, backend, and AI-powered applications. Adept at leading teams, architecting robust systems, and integrating LLM-driven features for real-world impact. Currently pursuing a B.E. in Computer Engineering and a Diploma in Programming from IIT Madras. Eager to contribute technical expertise to challenging, high-impact projects.",
+  "summary": "Full-stack developer and AI engineer skilled in building scalable web systems, microservices, and LLM-powered applications. Experienced in leading small engineering teams, architecting production-grade systems, integrating vector search, and deploying cloud-native solutions. Pursuing a B.E. in Computer Engineering and a Diploma in Programming from IIT Madras.",
   "education": [
     {
-      "institution": "Thapar Institute of Engineering Technology",
+      "institution": "Thapar Institute of Engineering & Technology",
       "degree": "Bachelor of Engineering in Computer Engineering",
+      "duration": "Aug 2023 – Present",
       "cgpa": "9.38"
     },
     {
       "institution": "Indian Institute of Technology Madras",
       "degree": "Diploma in Programming",
+      "duration": "Sept 2023 – Present",
       "cgpa": "8.34"
     },
     {
       "institution": "Saiyyid Hamid Senior Secondary School",
       "degree": "Secondary Education",
+      "duration": "July 2022",
       "grade": "93%"
     }
   ],
   "experience": [
     {
-      "title": "Team Lead/Full Stack Engineer",
+      "title": "Team Lead / Full Stack Engineer",
       "company": "Thapar Edutube",
       "location": "Thapar University, Patiala, India",
-      "duration": "Aug 2023-Present",
+      "duration": "Oct 2024 – Present",
       "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS", "Redis", "Docker"],
-      "description": "Led a team of 3 developers to build the complete frontend (Next.js) and backend (Node.js) for Thapar Edutube, an exclusive lecture archive for 10000+ university students.",
+      "description": "Leading development of Thapar Edutube, an exclusive lecture archive for 10,000+ university students.",
       "responsibilities": [
-        "Led a team of 3 developers to build the complete frontend (Next.js) and backend (Node.js) for Thapar Edutube",
-        "Currently leading storage and hosting setup, coordinating with faculty to record and upload lectures",
-        "Designing teacher dashboards for managing course flow, uploading resources, and customizing lesson sequencing",
-        "Developed auxiliary tools, including a slot booking app for reserving lecture recording times and an admin dashboard for customizing course, chapter and lecture structures"
+        "Built complete frontend and backend architecture with a team of 3 developers",
+        "Leading storage, hosting, and lecture ingestion pipeline setup",
+        "Designing teacher dashboards for course flow, resources, and lesson sequencing",
+        "Developed auxiliary systems including a recording slot-booking app and an admin dashboard for course structuring"
       ]
     },
     {
       "title": "Backend Engineer",
       "company": "Datesheet Generator",
       "location": "Thapar University, Patiala, India",
-      "duration": "Mar 2025-Present",
+      "duration": "Mar 2025 – Present",
       "technologies": ["Flask", "MySQL", "Jinja2", "Python"],
-      "description": "Re-architected the in-progress datesheet generator project from Flask sessions to a MySQL-backed, multi-user dashboard system.",
+      "description": "Re-architecting the university’s datesheet generation system into a robust, multi-user backend.",
       "responsibilities": [
-        "Re-architected the in-progress datesheet generator project from Flask sessions to a MySQL-backed, multi-user dashboard system",
-        "Implemented secure login, multi-user support, and savepoint functionality to allow partial work resumption",
-        "Enhanced datesheet creation workflow for improved usability and reduced scheduling errors",
-        "Currently integrating with the university's PeopleSoft Oracle database to automatically fetch student, course, and faculty details and push finalized datesheets directly"
+        "Migrated the system from Flask sessions to a MySQL-backed multi-user architecture",
+        "Implemented secure login, multi-user support, and savepoint-based progress tracking",
+        "Improved workflow usability and reduced scheduling errors by 40%",
+        "Integrating PeopleSoft Oracle APIs to fetch student, course, and faculty data automatically"
       ]
     }
   ],
@@ -57,11 +63,12 @@
     {
       "name": "SkillMap",
       "subtitle": "Personalized Learning Engine",
-      "technologies": ["Next.js", "Express", "Node.js", "Qdrant", "GPT-4"],
-      "description": "Built AI-driven platform to generate personalized learning paths based on resumes and user goals.",
+      "technologies": ["Next.js", "Express", "Node.js", "Qdrant", "GPT-4", "GitHub Actions"],
+      "description": "AI-powered platform that generates personalized learning paths and tracks progress across coding platforms.",
       "highlights": [
-        "Implemented skill taxonomy embedding in Qdrant, enabling semantic search and peer skill-matching",
-        "Integrated OpenAI's GPT-4 for automated gap analysis and personalized recommendations, streamlining the learning path generation process"
+        "Embedded skill taxonomies in Qdrant for semantic search and peer skill matching",
+        "Used GPT-4 for automated gap analysis and customized upskilling roadmaps",
+        "Added LeetCode tracking and automated recommendation flows"
       ],
       "link": "https://skillmap-five.vercel.app",
       "github": "https://github.com/aahil-khan/skillmap"
@@ -70,42 +77,60 @@
       "name": "Thapar Edutube",
       "subtitle": "Thapar Exclusive Lecture Archive",
       "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS"],
-      "description": "Led a team of 3 developers to build an exclusive lecture archive for 10000+ university students.",
+      "description": "University-wide lecture archive serving 10,000+ students.",
       "highlights": [
-        "Currently leading storage and hosting setup, coordinating with faculty to record and upload lectures.",
-        "Designing teacher dashboards for managing course flow, uploading resources, and customizing lesson sequencing.",
-        "Developed auxiliary tools, including a slot booking app for reserving lecture recording times and an admin dashboard for customizing course, chapter and lecture structures."
+        "Led team of 3 developers across frontend and backend",
+        "Implemented lecture ingestion workflows and faculty coordination process",
+        "Designed admin dashboards and a booking app for recording sessions"
       ],
       "link": "https://edutube.dctofficethapar.xyz"
     },
     {
       "name": "Intellidine",
-      "subtitle": "A Modern Restaurant Management Platform",
-      "technologies": ["Next.js", "Express", "Node.js", "Prisma", "Docker", "Kafka", "Prometheus", "Grafana"],
-      "description": "IntelliDine is a modern microservices-based restaurant management platform designed to streamline operations and enhance customer experience."
+      "subtitle": "Microservices-Based Restaurant Management Platform",
+      "technologies": ["Next.js", "Nest.js", "TypeScript", "Docker", "Kafka", "Jest", "GitHub Actions"],
+      "description": "A modular microservices platform for seamless order, inventory, menu, and notification management.",
+      "highlights": [
+        "Designed service boundaries for independent deployability",
+        "Implemented reliable workflows preventing duplicate operations",
+        "Streamlined schemas for maintainability and scaling"
+      ]
+    },
+    {
+      "name": "Portana",
+      "subtitle": "AI-Powered Interactive Portfolio",
+      "technologies": ["Next.js", "Fastify", "TypeScript", "Qdrant", "GPT-4o", "Docker", "GitHub Actions", "n8n", "Umami Analytics"],
+      "description": "An AI-driven portfolio with conversational abilities and dynamic content rendering.",
+      "highlights": [
+        "Built modular API system for real-time interactions",
+        "Added n8n pipelines for auto-syncing GitHub/LinkedIn activity",
+        "Implemented vector-powered project insights"
+      ],
+      "link": "https://portana.vercel.app"
     },
     {
       "name": "Vehicle Parking App",
+      "subtitle": "Real-Time Parking Management System",
       "technologies": ["Flask", "Vue.js", "SQLite", "Redis", "Celery"],
-      "description": "Developed real-time parking management system with JWT authentication and granular role-based access.",
+      "description": "Full system supporting JWT auth, role-based dashboards, and real-time occupancy updates.",
       "highlights": [
-        "Integrated Redis caching and Celery-based scheduling, boosting API response speed by 35%",
-        "Built admin and attendant dashboards with live occupancy tracking and automated availability updates",
-        "Implemented scheduled reports and alerts for low availability, sent via email notifications"
+        "Used Redis caching and Celery scheduling to reduce DB load and boost responsiveness",
+        "Implemented live occupancy monitoring with automated alerts",
+        "Added scheduled reporting with email notifications"
       ]
     }
   ],
   "skills": {
     "languages": ["Python", "Java", "C++", "C"],
     "web": ["HTML", "CSS", "JavaScript", "React.js", "Next.js", "Vue.js", "Node.js", "Express.js", "GraphQL", "Flask", "Jinja2"],
-    "ai_llm": ["LangChain", "OpenAI Chat Completions Endpoint", "OpenAI Assistants API", "Prompt Engineering"],
+    "ai_llm": ["LangChain", "OpenAI Chat Completions", "OpenAI Assistants API", "RAG", "Prompt Engineering"],
     "search_vectors": ["OpenAI Embeddings", "PostgreSQL FTS", "Qdrant", "Elasticsearch"],
     "databases": ["PostgreSQL", "MySQL", "SQLite", "Redis", "SQLAlchemy", "Prisma"],
     "cloud": ["AWS (EC2)", "Heroku", "Vercel", "Cloudflare Tunnels"],
-    "devops": ["Docker", "Git", "GitHub", "Github Actions", "CI/CD pipelines"],
-    "testing": ["Jest (unit testing)", "Postman"],
+    "devops": ["Docker", "Docker Compose", "Nginx", "Git", "GitHub", "GitHub Actions", "CI/CD Pipelines"],
+    "testing": ["Jest", "Postman"],
     "ui": ["Bootstrap", "MUI", "Tailwind CSS"],
-    "other": ["WSL", "Kali Linux", "REST APIs", "Semantic Search", "RAG"]
+    "other": ["Linux System Administration", "REST APIs", "Semantic Search", "Microservices"]
   },
   "achievements": [
     {
