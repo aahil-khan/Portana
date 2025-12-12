@@ -18,7 +18,7 @@ export async function createApp(): Promise<FastifyInstance> {
   const env = loadEnv();
 
   const allowedOrigins = (process.env.ALLOWED_ORIGINS ||
-    'http://localhost:3000,https://portana.vercel.app,https://www.aahil-khan.tech').split(',').map((o) => o.trim()).filter(Boolean);
+    'http://localhost:3000,https://portana.vercel.app,https://aahil-khan.tech').split(',').map((o) => o.trim()).filter(Boolean);
 
   const isOriginAllowed = (origin?: string) => {
     if (!origin) return true; // allow same-origin/non-browser
