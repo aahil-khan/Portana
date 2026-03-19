@@ -6,8 +6,17 @@
       "title": "How I Turned an Old Laptop Into My Personal Cloud Server",
       "description": "How I repurposed an old laptop to create a personal cloud server. A deep dive into our setup, challenges, and solutions.",
       "link": "https://medium.com/@aahilminookhan/how-i-turned-an-old-laptop-into-my-personal-cloud-server-16d07de27399",
-      "publishedAt": "2024-11-13",
+      "publishedAt": "2025-11-13",
       "tags": ["Self Hosting", "Home Server", "DevOps", "Linux", "Software Development"],
+      "readTime": 6
+    },
+    {
+      "id": "blog-2",
+      "title": "Chrome Already Built Our Idea. We Won the Hackathon Anyway.",
+      "description": "How we built Konta in 10 days, a local-first AI browser agent, the challenges we hit, and the pivot that changed everything.",
+      "link": "https://medium.com/@aahilminookhan/chrome-already-built-our-idea-we-won-the-hackathon-anyway-fdf2d3c9e219",
+      "publishedAt": "2026-03-19",
+      "tags": ["Web Development", "Hackathons", "Artificial Intelligence", "Chrome Extensions", "Machine Learning"],
       "readTime": 6
     }
   ]
