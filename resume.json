@@ -8,196 +8,141 @@
     "github": "https://github.com/aahil-khan",
     "portfolio": "https://portana.vercel.app"
   },
-  "summary": "Full-stack developer and AI engineer skilled in building scalable web systems, microservices, and LLM-powered applications. Experienced in leading small engineering teams, architecting production-grade systems, integrating vector search, and deploying cloud-native solutions. Pursuing a B.E. in Computer Engineering and a Diploma in Programming from IIT Madras.",
+  "summary": "Full-stack developer and AI engineer experienced in building production-grade web systems, microservices architectures, and LLM-powered applications. Strong background in backend engineering, vector search, and cloud deployment. Proven ability to design scalable APIs, implement RAG pipelines, and lead small engineering teams.",
   "education": [
     {
       "institution": "Thapar Institute of Engineering & Technology",
       "degree": "Bachelor of Engineering in Computer Engineering",
       "duration": "Aug 2023 – Present",
-      "cgpa": "9.38"
+      "cgpa": "9.23"
     },
     {
       "institution": "Indian Institute of Technology Madras",
       "degree": "Diploma in Programming",
       "duration": "Sept 2023 – Present",
       "cgpa": "8.34"
-    },
-    {
-      "institution": "Saiyyid Hamid Senior Secondary School",
-      "degree": "Secondary Education",
-      "duration": "July 2022",
-      "grade": "93%"
     }
   ],
   "experience": [
     {
-      "title": "Team Lead / Full Stack Engineer",
-      "company": "Thapar Edutube",
-      "location": "Thapar University, Patiala, India",
-      "duration": "Oct 2024 – Present",
-      "technologies": ["Next.js", "Express", "Node.js", "PostgreSQL FTS", "Redis", "Docker"],
-      "description": "Leading development of Thapar Edutube, an exclusive lecture archive for 10,000+ university students.",
-      "responsibilities": [
-        "Built complete frontend and backend architecture with a team of 3 developers",
-        "Leading storage, hosting, and lecture ingestion pipeline setup",
-        "Designing teacher dashboards for course flow, resources, and lesson sequencing",
-        "Developed auxiliary systems including a recording slot-booking app and an admin dashboard for course structuring"
-      ]
-    },
-    {
       "title": "Backend Engineer",
       "company": "Datesheet Generator",
       "location": "Thapar University, Patiala, India",
-      "duration": "Mar 2025 – Present",
-      "technologies": ["Flask", "MySQL", "Jinja2", "Python"],
-      "description": "Re-architecting the university’s datesheet generation system into a robust, multi-user backend.",
+      "duration": "Mar 2025 – Jul 2025",
+      "technologies": ["Flask", "MySQL", "Python"],
+      "description": "Re-architected the university’s datesheet generation system into a robust multi-user backend.",
       "responsibilities": [
-        "Migrated the system from Flask sessions to a MySQL-backed multi-user architecture",
-        "Implemented secure login, multi-user support, and savepoint-based progress tracking",
-        "Improved workflow usability and reduced scheduling errors by 40%",
-        "Integrating PeopleSoft Oracle APIs to fetch student, course, and faculty data automatically"
+        "Migrated system from session-based state to persistent MySQL-backed workflows",
+        "Implemented secure login, multi-user support, and savepoint functionality",
+        "Reduced scheduling errors by 40% through workflow improvements",
+        "Integrated external PeopleSoft systems for structured academic data ingestion"
+      ]
+    },
+    {
+      "title": "Team Lead / Full Stack Engineer",
+      "company": "Thapar EduTube",
+      "location": "Thapar University, Patiala, India",
+      "duration": "Oct 2024 – Jan 2025",
+      "technologies": ["Node.js", "Express", "PostgreSQL FTS", "Redis", "Docker", "AWS EC2"],
+      "description": "Led development of a lecture archival platform serving 10,000+ university students.",
+      "responsibilities": [
+        "Designed backend APIs for lecture ingestion, metadata management, and access control",
+        "Built admin and teacher dashboards for lecture uploads and course management",
+        "Implemented PostgreSQL full-text search for efficient lecture discovery",
+        "Deployed production services on AWS EC2 using Docker"
       ]
     }
   ],
   "projects": [
     {
-      "name": "SkillMap",
-      "subtitle": "Personalized Learning & Peer Analytics Platform",
-      "description": "A peer-learning and skill analytics platform that helps technical learners understand their strengths, identify skill gaps, and connect with peers on similar learning journeys. The backend ingests resume PDFs and LeetCode profiles, structures them using LLMs, embeds them semantically in a vector database, and enables intelligent skill-gap analysis and peer matching.",
+      "name": "FlowSync",
+      "subtitle": "AI Project Memory for Coding Agents",
+      "description": "AI project memory system providing persistent context to coding agents using the Model Context Protocol (MCP).",
       "technologies": {
-        "backend": ["Node.js", "Express.js"],
-        "ai_integration": ["OpenAI API (GPT-3.5-turbo, embeddings)"],
-        "database": ["Supabase (PostgreSQL)", "Qdrant (vector database)"],
-        "file_processing": ["PDF parsing", "Multer"],
-        "auth": ["Supabase Auth", "JWT authentication"],
-        "middleware": ["Express rate-limit"],
-        "containerization": ["Docker", "Docker Compose"],
-        "api": ["RESTful JSON APIs"],
-        "dev_tools": ["npm", "Git"]
+        "backend": ["TypeScript", "Python", "AWS Lambda"],
+        "ai_integration": ["Amazon Bedrock"],
+        "database": ["DynamoDB", "S3"],
+        "infrastructure": ["API Gateway"],
+        "dev_tools": ["VS Code Extension", "Docker"]
       },
       "highlights": [
-        "End-to-end backend design and implementation including REST APIs, data modeling, and secure authentication.",
-        "LLM-powered resume parsing with retry logic, moderation checks, and fallback model handling.",
-        "Custom skill taxonomy covering 50+ technical skills across DSA, Web Development, Databases, AI/ML, DevOps, and Software Engineering.",
-        "Dual skill profiling combining structured resume data with LeetCode competitive programming statistics.",
-        "Semantic search and peer matching using vector embeddings stored in Qdrant.",
-        "Automated skill-gap analysis with AI-generated personalized learning paths.",
-        "LeetCode integration with category-wise problem-solving insights segmented by difficulty.",
-        "Production-ready system with authentication, rate limiting, robust file handling, comprehensive error handling, logging, and Docker-based deployment.",
-        "ATS scoring microservice to evaluate job-fit analysis for candidates."
-      ],
-      "link": "https://skillmap-five.vercel.app",
-      "github": "https://github.com/aahil-khan/skillmap"
+        "Built MCP-compatible context memory system for coding agents",
+        "Developed VS Code extension and MCP server for project context retrieval",
+        "Implemented event-driven pipeline extracting structured insights from git diffs",
+        "Achieved 1.26s median push-to-search latency using optimized RAG architecture"
+      ]
     },
     {
-      "name": "Thapar EduTube",
-      "subtitle": "Thapar Exclusive Lecture Archive",
-      "description": "A full-stack digital learning platform built for Thapar University, featuring an admin panel for managing courses, teachers, lectures, and students, along with a student interface for browsing and watching lectures. Supports multi-teacher course structures, watch-history tracking, secure authentication, and optimized search across courses and lectures.",
+      "name": "Konta",
+      "subtitle": "Context-Aware Browsing System",
+      "description": "Local-first Chrome extension that converts browsing activity into a private knowledge base.",
       "technologies": {
-        "frontend": ["Next.js 15", "React 19", "Tailwind CSS", "Material UI"],
-        "backend": ["Node.js", "Express.js", "PostgreSQL", "Prisma ORM"],
-        "search_and_performance": ["PostgreSQL Full-Text Search", "Redis"],
-        "auth": ["JWT Authentication", "bcrypt", "Secure Cookies"],
-        "infrastructure_and_tools": ["Axios", "Nodemon", "Prisma CLI"]
+        "frontend": ["React"],
+        "runtime": ["TypeScript"],
+        "storage": ["IndexedDB"],
+        "ai": ["Transformers.js", "ONNX"]
       },
       "highlights": [
-        "Role-based access system supporting Admin, Teacher, and Student workflows.",
-        "Multi-teacher architecture allowing separate implementations of the same course by different instructors.",
-        "Comprehensive CRUD system for users, teachers, courses, lectures, and chapters.",
-        "YouTube integration enabling seamless video playback and progress tracking.",
-        "Optimized lecture and course search using PostgreSQL FTS.",
-        "Persistent watch-history tracking with timestamps for each lecture.",
-        "Modular backend structure with controllers, routes, middlewares, and centralized error handling.",
-        "Fully responsive frontend with dashboards, course listing, and lecture viewing experience.",
-        "Redis caching layer for accelerating frequently accessed queries.",
-        "Prisma-based database migrations and type-safe query operations."
-      ],
-      "link": "https://edutube.dctofficethapar.xyz"
-    },
-    {
-      "name": "Intellidine",
-      "subtitle": "Microservices-Based Restaurant Management Platform",
-      "description": "A multi-tenant SaaS platform for restaurants that digitizes ordering, payments, and in-restaurant operations. Customers scan table-specific QR codes to browse menus, place orders, and pay. Staff interfaces support order management, kitchen operations, and inventory tracking. Built using a microservices architecture with tenant isolation, event-driven communication, and scalable infrastructure.",
-      "technologies": {
-        "backend_and_services": ["TypeScript", "Node.js (NestJS)", "PostgreSQL (Prisma ORM)"],
-        "event_streaming": ["Kafka"],
-        "caching_and_sessions": ["Redis"],
-        "payments_and_communication": ["Razorpay", "MSG91 (SMS/OTP)"],
-        "infrastructure": ["Docker", "Docker Compose", "Nginx"],
-        "monitoring": ["Prometheus", "Grafana"],
-        "testing": ["Jest"]
-      },
-      "highlights": [
-        "Multi-tenant architecture with strict tenant isolation enforced via tenant_id at both JWT and database layers.",
-        "Eight-service microservices architecture: auth, menu, order, payment, inventory, notification, analytics, and discount-engine.",
-        "Event-driven communication between services using Kafka for reliable, scalable message flows.",
-        "JWT authentication with role-based access (MANAGER, WAITER, KITCHEN_STAFF, SUPER_ADMIN) and OTP-based customer login.",
-        "WebSocket support powering real-time order updates and Kitchen Display System (KDS) notifications.",
-        "Razorpay integration with webhook verification and fallback handlers for cash-based workflows.",
-        "Redis caching with automatic invalidation for menu, category, and frequently updated entities.",
-        "Twelve Jest test suites covering critical business workflows across independent services.",
-        "Production-grade observability using Prometheus metrics and Grafana dashboards.",
-        "Dual deployment support: local development via Docker Compose and production via Nginx reverse proxy."
-      ],
-      "link": "https://frontend-intellidine.vercel.app",
-      "github": "https://github.com/aahil-khan/intellidine"
+        "Implemented on-device embeddings for private semantic search",
+        "Designed multi-stage retrieval pipeline for contextual search",
+        "Built knowledge graph linking pages via semantic relationships",
+        "Won Samsung PRISM Web Agent Hackathon 2025"
+      ]
     },
     {
       "name": "Portana",
       "subtitle": "AI-Powered Interactive Portfolio",
-      "technologies": ["Next.js", "Fastify", "TypeScript", "Qdrant", "GPT-4o", "Docker", "GitHub Actions", "n8n", "Umami Analytics"],
-      "description": "An AI-driven portfolio with conversational abilities and dynamic content rendering. You're using it right now :)",
-      "highlights": [
-        "Built modular API system for real-time interactions",
-        "Added n8n pipelines for auto-syncing GitHub/LinkedIn activity",
-        "Implemented vector-powered project insights"
-      ],
-      "link": "https://portana.vercel.app",
-      "github": "https://github.com/aahil-khan/portana"
-    },
-    {
-      "name": "Vehicle Parking Management System",
-      "subtitle": "Smart Parking Automation Platform",
-      "description": "A full-stack parking management platform that handles parking lots, spot availability, and vehicle reservations for both admins and end-users. Includes real-time tracking, automated billing, background task processing, email notifications, and data analytics dashboards.",
+      "description": "Conversational AI portfolio with real-time project insights and automated context updates.",
       "technologies": {
-        "backend": ["Flask", "Python", "SQLAlchemy ORM", "SQLite"],
-        "frontend": ["Vue.js 2.6", "Vue Router", "Axios", "Chart.js"],
-        "auth": ["JWT (Flask-JWT-Extended)"],
-        "caching_and_queueing": ["Redis"],
-        "background_jobs": ["Celery", "Celery Beat"],
-        "email_service": ["Flask-Mail (Gmail SMTP)"],
-        "api": ["RESTful JSON APIs"],
-        "dev_tools": ["npm", "pip", "Git"]
+        "frontend": ["Next.js"],
+        "backend": ["Fastify", "TypeScript"],
+        "ai": ["GPT-4o"],
+        "database": ["Qdrant"],
+        "automation": ["n8n"],
+        "devops": ["Docker", "GitHub Actions"]
       },
       "highlights": [
-        "Multi-tenant architecture supporting unlimited parking lots with isolated management.",
-        "Real-time tracking of parking spot availability across multiple locations.",
-        "Role-based access control (Admin/User) implemented using JWT authentication.",
-        "Dynamic pricing rules with automated billing and invoice generation.",
-        "Celery-powered asynchronous job processing and scheduled tasks via Celery Beat.",
-        "Automated email notifications including reminders and monthly activity reports.",
-        "Redis caching for significantly faster API responses and reduced database load.",
-        "Interactive analytics dashboards built with Chart.js for occupancy and revenue trends.",
-        "CSV export for parking history with automated email delivery to users.",
-        "Structured error handling across all routes with consistent JSON responses.",
-        "Responsive UI built using reusable Vue components with Flexbox and Grid layouts.",
-        "Scalable backend architecture with clear separation of concerns suited for production deployments."
+        "Built conversational interface for project exploration",
+        "Implemented vector-powered project search",
+        "Created n8n workflows to auto-sync GitHub and LinkedIn activity"
+      ],
+      "link": "https://portana.vercel.app"
+    },
+    {
+      "name": "Intellidine",
+      "subtitle": "Microservices-based Order Management System",
+      "description": "Restaurant SaaS platform using microservices architecture for orders, inventory, and payments.",
+      "technologies": {
+        "backend": ["NestJS", "TypeScript"],
+        "database": ["PostgreSQL", "Prisma"],
+        "messaging": ["Kafka"],
+        "cache": ["Redis"],
+        "devops": ["Docker", "GitHub Actions"],
+        "testing": ["Jest"]
+      },
+      "highlights": [
+        "Designed 5–7 service microservices architecture",
+        "Implemented event-driven workflows using Kafka",
+        "Built tenant-isolated data models",
+        "Containerized services with CI pipelines"
       ]
     }
   ],
   "skills": {
-    "languages": ["Python", "Java", "C++", "C"],
-    "web": ["HTML", "CSS", "JavaScript", "React.js", "Next.js", "Vue.js", "Node.js", "Express.js", "GraphQL", "Flask", "Jinja2"],
-    "ai_llm": ["LangChain", "OpenAI Chat Completions", "OpenAI Assistants API", "RAG", "Prompt Engineering"],
-    "search_vectors": ["OpenAI Embeddings", "PostgreSQL FTS", "Qdrant", "Elasticsearch"],
-    "databases": ["PostgreSQL", "MySQL", "SQLite", "Redis", "SQLAlchemy", "Prisma"],
-    "cloud": ["AWS (EC2)", "Heroku", "Vercel", "Cloudflare Tunnels"],
-    "devops": ["Docker", "Docker Compose", "Nginx", "Git", "GitHub", "GitHub Actions", "CI/CD Pipelines"],
-    "testing": ["Jest", "Postman"],
-    "ui": ["Bootstrap", "MUI", "Tailwind CSS"],
-    "other": ["Linux System Administration", "REST APIs", "Semantic Search", "Microservices"]
+    "languages": ["Python", "TypeScript", "JavaScript"],
+    "backend": ["Node.js", "Express.js", "Fastify", "Flask"],
+    "frontend": ["React.js", "Next.js", "Tailwind CSS"],
+    "databases": ["PostgreSQL", "MySQL", "Redis"],
+    "ai": ["RAG", "vector retrieval", "embeddings", "semantic search"],
+    "devops": ["Docker", "Nginx", "GitHub Actions"],
+    "cloud": ["AWS EC2", "Lambda", "API Gateway", "DynamoDB", "S3"],
+    "testing": ["Jest", "Vitest", "Postman"]
   },
   "achievements": [
+    {
+      "title": "Winner",
+      "event": "Samsung PRISM Web Agent Hackathon 2025"
+    },
     {
       "title": "Innovation Award",
       "event": "Agentic AI Hackathon 2025",
