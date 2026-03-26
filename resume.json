@@ -63,7 +63,7 @@
         "ai_integration": ["Amazon Bedrock"],
         "database": ["DynamoDB", "S3"],
         "infrastructure": ["API Gateway"],
-        "dev_tools": ["VS Code Extension", "Docker"]
+        "dev_tools": ["VS Code Extension"]
       },
       "highlights": [
         "Built MCP-compatible context memory system for coding agents",
