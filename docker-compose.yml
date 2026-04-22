@@ -31,6 +31,30 @@ services:
     restart: unless-stopped
     networks:
       - portfolio-net
+    healthcheck:
+      test: ["CMD", "curl", "-sS", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingest-jobs:
+    image: curlimages/curl
+    container_name: portfolio-os-ingest
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - portfolio-net
+    command: >
+      sh -c "
+      echo 'Starting ingestion jobs...' &&
+      curl -sS -X POST http://backend:3000/api/admin/ingest/resume &&
+      curl -sS -X POST http://backend:3000/api/admin/ingest/cheatsheet &&
+      curl -sS -X POST http://backend:3000/api/admin/ingest/github &&
+      curl -sS -X POST http://backend:3000/api/admin/ingest/medium -H 'Content-Type: application/json' -d '{\"username\":\"${MEDIUM_USERNAME:-}\"}' &&
+      echo 'Ingestion jobs completed.'
+      "
+
 
   qdrant:
     image: qdrant/qdrant:latest

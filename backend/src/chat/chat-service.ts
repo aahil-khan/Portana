@@ -50,6 +50,16 @@ export class ChatService {
   private sessions = new Map<string, ChatSession>();
   private openai: OpenAI | null = null;
 
+  /**
+   * Remove trailing sentence punctuation from URLs so linkification stays clean.
+   */
+  private sanitizeTrailingUrlPunctuation(text: string): string {
+    return text.replace(
+      /(https?:\/\/[^\s<>"]+?)([.,!?;:]+)(?=(\s|$))/g,
+      '$1'
+    );
+  }
+
   private getOpenAI(): OpenAI {
     if (!this.openai) {
       this.openai = new OpenAI({
@@ -352,8 +362,9 @@ Respond ONLY as JSON. No markdown. Pure JSON only.`;
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         if (content) {
-          fullResponse += content;
-          yield content;
+          const sanitizedContent = this.sanitizeTrailingUrlPunctuation(content);
+          fullResponse += sanitizedContent;
+          yield sanitizedContent;
         }
       }
 
@@ -418,7 +429,8 @@ Respond ONLY as JSON. No markdown. Pure JSON only.`;
         temperature: context.tonality === 'creative' ? 0.9 : 0.7,
       });
 
-      const response = completion.choices[0]?.message?.content || '';
+      const rawResponse = completion.choices[0]?.message?.content || '';
+      const response = this.sanitizeTrailingUrlPunctuation(rawResponse);
 
       // Save assistant response to memory
       await this.saveMessage(sessionId, 'assistant', response);

@@ -8,7 +8,7 @@
     "github": "https://github.com/aahil-khan",
     "portfolio": "https://portana.vercel.app"
   },
-  "summary": "Full-stack developer and AI engineer experienced in building production-grade web systems, microservices architectures, and LLM-powered applications. Strong background in backend engineering, vector search, and cloud deployment. Proven ability to design scalable APIs, implement RAG pipelines, and lead small engineering teams.",
+  "summary": "Full-stack developer and AI engineer experienced in building production-grade systems, scalable APIs, and LLM-powered applications. Strong focus on backend engineering, RAG pipelines, and cloud-native architectures with proven ability to lead and ship real-world systems.",
   "education": [
     {
       "institution": "Thapar Institute of Engineering & Technology",
@@ -30,12 +30,11 @@
       "location": "Thapar University, Patiala, India",
       "duration": "Mar 2025 – Jul 2025",
       "technologies": ["Flask", "MySQL", "Python"],
-      "description": "Re-architected the university’s datesheet generation system into a robust multi-user backend.",
       "responsibilities": [
-        "Migrated system from session-based state to persistent MySQL-backed workflows",
-        "Implemented secure login, multi-user support, and savepoint functionality",
-        "Reduced scheduling errors by 40% through workflow improvements",
-        "Integrated external PeopleSoft systems for structured academic data ingestion"
+        "Re-architected system from session-based state to a persistent MySQL-backed workflow",
+        "Implemented secure login, multi-user support, and savepoint functionality for partial work resumption",
+        "Reduced scheduling errors by 40% through improved generation workflows",
+        "Integrated external university systems (Oracle PeopleSoft) for automated data ingestion and export"
       ]
     },
     {
@@ -44,12 +43,12 @@
       "location": "Thapar University, Patiala, India",
       "duration": "Oct 2024 – Jan 2025",
       "technologies": ["Node.js", "Express", "PostgreSQL FTS", "Redis", "Docker", "AWS EC2"],
-      "description": "Led development of a lecture archival platform serving 10,000+ university students.",
       "responsibilities": [
+        "Led a team of 3 engineers to build a lecture platform serving 10,000+ students",
         "Designed backend APIs for lecture ingestion, metadata management, and access control",
-        "Built admin and teacher dashboards for lecture uploads and course management",
-        "Implemented PostgreSQL full-text search for efficient lecture discovery",
-        "Deployed production services on AWS EC2 using Docker"
+        "Built full-stack admin and teacher dashboards for uploads and course workflows",
+        "Implemented PostgreSQL full-text search optimizing latency over Elasticsearch",
+        "Deployed and maintained production services on AWS EC2 using Docker"
       ]
     }
   ],
@@ -57,25 +56,25 @@
     {
       "name": "FlowSync",
       "subtitle": "AI Project Memory for Coding Agents",
-      "description": "AI project memory system providing persistent context to coding agents using the Model Context Protocol (MCP).",
+      "description": "Persistent AI memory system for coding agents using MCP and RAG pipelines.",
       "technologies": {
         "backend": ["TypeScript", "Python", "AWS Lambda"],
-        "ai_integration": ["Amazon Bedrock"],
+        "ai": ["Amazon Bedrock"],
         "database": ["DynamoDB", "S3"],
-        "infrastructure": ["API Gateway"],
-        "dev_tools": ["VS Code Extension"]
+        "infra": ["API Gateway"],
+        "tools": ["VS Code Extension", "MCP"]
       },
       "highlights": [
-        "Built MCP-compatible context memory system for coding agents",
-        "Developed VS Code extension and MCP server for project context retrieval",
-        "Implemented event-driven pipeline extracting structured insights from git diffs",
-        "Achieved 1.26s median push-to-search latency using optimized RAG architecture"
+        "Built MCP-compatible project memory system for coding agents",
+        "Developed VS Code extension and MCP server for context retrieval",
+        "Created async event-driven pipeline extracting decisions and tasks from git diffs",
+        "Achieved 1.26s median push-to-search latency (p95: 1.60s)"
       ]
     },
     {
       "name": "Konta",
       "subtitle": "Context-Aware Browsing System",
-      "description": "Local-first Chrome extension that converts browsing activity into a private knowledge base.",
+      "description": "Local-first Chrome extension converting browsing activity into a private knowledge base.",
       "technologies": {
         "frontend": ["React"],
         "runtime": ["TypeScript"],
@@ -84,59 +83,61 @@
       },
       "highlights": [
         "Implemented on-device embeddings for private semantic search",
-        "Designed multi-stage retrieval pipeline for contextual search",
-        "Built knowledge graph linking pages via semantic relationships",
-        "Won Samsung PRISM Web Agent Hackathon 2025"
+        "Designed multi-stage retrieval pipeline",
+        "Built knowledge graph linking pages via contextual relationships",
+        "Engineered sessionization logic to separate browsing contexts",
+        "Winner — Samsung PRISM Web Agent Hackathon 2025"
       ]
     },
     {
       "name": "Portana",
-      "subtitle": "AI-Powered Interactive Portfolio",
-      "description": "Conversational AI portfolio with real-time project insights and automated context updates.",
+      "subtitle": "AI Powered Interactive Portfolio",
+      "description": "Conversational portfolio with dynamic project insights and automated updates.",
       "technologies": {
         "frontend": ["Next.js"],
         "backend": ["Fastify", "TypeScript"],
-        "ai": ["GPT-4o"],
         "database": ["Qdrant"],
         "automation": ["n8n"],
-        "devops": ["Docker", "GitHub Actions"]
+        "analytics": ["Umami"],
+        "devops": ["Docker"]
       },
       "highlights": [
         "Built conversational interface for project exploration",
-        "Implemented vector-powered project search",
-        "Created n8n workflows to auto-sync GitHub and LinkedIn activity"
+        "Developed modular APIs for real-time rendering",
+        "Implemented n8n auto-sync workflows for GitHub/LinkedIn",
+        "Integrated analytics for usage tracking"
       ],
       "link": "https://portana.vercel.app"
     },
     {
-      "name": "Intellidine",
-      "subtitle": "Microservices-based Order Management System",
-      "description": "Restaurant SaaS platform using microservices architecture for orders, inventory, and payments.",
+      "name": "GINA",
+      "subtitle": "Grounded Insights from Natural Language Analytics",
+      "description": "Multi-model NL→SQL analytics system with streaming and structured outputs.",
       "technologies": {
-        "backend": ["NestJS", "TypeScript"],
-        "database": ["PostgreSQL", "Prisma"],
-        "messaging": ["Kafka"],
-        "cache": ["Redis"],
-        "devops": ["Docker", "GitHub Actions"],
-        "testing": ["Jest"]
+        "frontend": ["Next.js"],
+        "backend": ["Fastify", "TypeScript"],
+        "database": ["PostgreSQL"],
+        "auth": ["Supabase"],
+        "streaming": ["SSE"]
       },
       "highlights": [
-        "Designed 5–7 service microservices architecture",
-        "Implemented event-driven workflows using Kafka",
-        "Built tenant-isolated data models",
-        "Containerized services with CI pipelines"
+        "Built NL→SQL pipeline with structured outputs",
+        "Implemented SSE streaming with snapshot + cache restore",
+        "Designed multi-turn context-aware query system",
+        "Added semantic schema correction and failure-tolerant workflows"
       ]
     }
   ],
   "skills": {
     "languages": ["Python", "TypeScript", "JavaScript"],
-    "backend": ["Node.js", "Express.js", "Fastify", "Flask"],
-    "frontend": ["React.js", "Next.js", "Tailwind CSS"],
-    "databases": ["PostgreSQL", "MySQL", "Redis"],
-    "ai": ["RAG", "vector retrieval", "embeddings", "semantic search"],
-    "devops": ["Docker", "Nginx", "GitHub Actions"],
+    "backend": ["Node.js", "Express.js", "Fastify", "FastAPI", "Flask", "REST APIs"],
+    "frontend": ["React.js", "Next.js", "Tailwind CSS", "Shadcn"],
+    "databases": ["PostgreSQL", "MySQL", "Redis", "Prisma"],
+    "ai_systems": ["RAG pipelines", "semantic search", "vector retrieval", "structured outputs", "embeddings", "LLM APIs"],
+    "devops": ["Docker", "Nginx", "CI/CD (GitHub Actions)"],
     "cloud": ["AWS EC2", "Lambda", "API Gateway", "DynamoDB", "S3"],
-    "testing": ["Jest", "Vitest", "Postman"]
+    "testing": ["Jest", "Vitest", "Postman"],
+    "tools": ["Cursor", "ChatGPT", "Claude", "Gemini", "GitHub Copilot"]
   },
   "achievements": [
     {
