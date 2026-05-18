@@ -31,31 +31,31 @@
       "duration": "Mar 2025 – Jul 2025",
       "technologies": ["Flask", "MySQL", "Python"],
       "responsibilities": [
-        "Re-architected system from session-based state to a persistent MySQL-backed workflow",
-        "Implemented secure login, multi-user support, and savepoint functionality for partial work resumption",
-        "Reduced scheduling errors by 40% through improved generation workflows",
-        "Integrated external university systems (Oracle PeopleSoft) for automated data ingestion and export"
+        "Re-architected the system from session-based state to a persistent MySQL-backed workflow.",
+        "Implemented secure login, multi-user support, and savepoint functionality for partial work resumption.",
+        "Improved datesheet generation workflows, reducing scheduling errors by 40%.",
+        "Integrating with external university systems (Oracle PeopleSoft) to automate structured data ingestion and export."
       ]
     },
     {
-      "title": "Team Lead / Full Stack Engineer",
+      "title": "Team Lead / Full-Stack Engineer",
       "company": "Thapar EduTube",
       "location": "Thapar University, Patiala, India",
       "duration": "Oct 2024 – Jan 2025",
       "technologies": ["Node.js", "Express", "PostgreSQL FTS", "Redis", "Docker", "AWS EC2"],
       "responsibilities": [
-        "Led a team of 3 engineers to build a lecture platform serving 10,000+ students",
-        "Designed backend APIs for lecture ingestion, metadata management, and access control",
-        "Built full-stack admin and teacher dashboards for uploads and course workflows",
-        "Implemented PostgreSQL full-text search optimizing latency over Elasticsearch",
-        "Deployed and maintained production services on AWS EC2 using Docker"
+        "Led a team of 3 engineers to build a lecture archival platform serving 10,000+ university students.",
+        "Designed backend APIs for lecture ingestion, metadata management, full-text search, and access control.",
+        "Built full-stack admin and teacher dashboards for lecture uploads, course management, and workflow customization.",
+        "Implemented search functionality using PostgreSQL Full-Text Search after evaluating Elasticsearch, optimizing for latency and operational simplicity.",
+        "Deployed and operated production services on AWS EC2 using Docker, ensuring reliability for daily academic use."
       ]
     }
   ],
   "projects": [
     {
-      "name": "FlowSync",
-      "subtitle": "AI Project Memory for Coding Agents",
+      "name": "FlowSync AI",
+      "subtitle": "Project Memory for Coding Agents",
       "description": "Persistent AI memory system for coding agents using MCP and RAG pipelines.",
       "technologies": {
         "backend": ["TypeScript", "Python", "AWS Lambda"],
@@ -65,10 +65,10 @@
         "tools": ["VS Code Extension", "MCP"]
       },
       "highlights": [
-        "Built MCP-compatible project memory system for coding agents",
-        "Developed VS Code extension and MCP server for context retrieval",
-        "Created async event-driven pipeline extracting decisions and tasks from git diffs",
-        "Achieved 1.26s median push-to-search latency (p95: 1.60s)"
+        "Built an Al project memory system giving coding agents persistent context via the Model Context Protocol (MCP).",
+        "Developed a VS Code extension and MCP server for context logging, project search, recent changes, and branch-aware RAG pipeline with vector retrieval.",
+        "Built an event-driven async AWS pipeline extracting decisions, risks, and tasks from git diffs using Bedrock models.",
+        "Implemented a branch-aware RAG system with DynamoDB caching achieving 1.26s median push-to-search latency (p95: 1.60s)."
       ]
     },
     {
@@ -82,16 +82,16 @@
         "ai": ["Transformers.js", "ONNX"]
       },
       "highlights": [
-        "Implemented on-device embeddings for private semantic search",
-        "Designed multi-stage retrieval pipeline",
-        "Built knowledge graph linking pages via contextual relationships",
-        "Engineered sessionization logic to separate browsing contexts",
-        "Winner — Samsung PRISM Web Agent Hackathon 2025"
+        "Built a local-first Chrome extension that converts browsing activity into an on-device knowledge base.",
+        "Implemented on-device semantic embeddings and a multi-stage retrieval pipeline for private, low-latency search.",
+        "Designed a knowledge graph linking system connecting pages using semantic, temporal, and contextual relationships.",
+        "Engineered sessionization logic with context boundary detection to prevent unrelated browsing tasks from merging.",
+        "Winner — Samsung PRISM Web Agent Hackathon"
       ]
     },
     {
       "name": "Portana",
-      "subtitle": "AI Powered Interactive Portfolio",
+      "subtitle": "Al Powered Interactive Portfolio",
       "description": "Conversational portfolio with dynamic project insights and automated updates.",
       "technologies": {
         "frontend": ["Next.js"],
@@ -102,10 +102,10 @@
         "devops": ["Docker"]
       },
       "highlights": [
-        "Built conversational interface for project exploration",
-        "Developed modular APIs for real-time rendering",
-        "Implemented n8n auto-sync workflows for GitHub/LinkedIn",
-        "Integrated analytics for usage tracking"
+        "Built an Al-driven portfolio platform with conversational project exploration and dynamic project insights.",
+        "Developed modular API routes enabling real-time rendering and smoother user interactions.",
+        "Added non-based auto-sync workflows for GitHub/LinkedIn to keep content continuously updated.",
+        "Integrated analytics and monitoring to track usage and system behavior."
       ],
       "link": "https://portana.vercel.app"
     },
@@ -121,10 +121,10 @@
         "streaming": ["SSE"]
       },
       "highlights": [
-        "Built NL→SQL pipeline with structured outputs",
-        "Implemented SSE streaming with snapshot + cache restore",
-        "Designed multi-turn context-aware query system",
-        "Added semantic schema correction and failure-tolerant workflows"
+        "Built a multi model NL→SQL pipeline for conversational data analytics with structured outputs.",
+        "Implemented SSE streaming with fast path routing (snapshot + cache restore) improving latency and transparency.",
+        "Designed context aware multi turn query handling using structured conversation state for grounded follow ups.",
+        "Added semantic schema correction loops and failure tolerant API/SSE error handling for reliable analytics workflows."
       ]
     }
   ],
@@ -142,11 +142,11 @@
   "achievements": [
     {
       "title": "Winner",
-      "event": "Samsung PRISM Web Agent Hackathon 2025"
+      "event": "Samsung PRISM Web Agent Hackathon"
     },
     {
       "title": "Innovation Award",
-      "event": "Agentic AI Hackathon 2025",
+      "event": "Agentic AI Hackathon",
       "organization": "Ulster University (UK)"
     }
   ]
