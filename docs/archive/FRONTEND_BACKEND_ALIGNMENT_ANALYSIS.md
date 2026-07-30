@@ -496,13 +496,13 @@ try {
 ### Current State
 ```tsx
 // Hard-coded in app/(public)/page.tsx line 44:
-const response = await fetch("https://portana-api.aahil-khan.tech/api/chat/ask", {
+const response = await fetch("https://portana-api.aahil-khan.xyz/api/chat/ask", {
 ```
 
 ### Required Setup
 Create `.env.local`:
 ```
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 ```
 
 Use in components:
@@ -687,7 +687,7 @@ export const chatApi = {
 
 **Create** `.env.local`:
 ```env
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 ```
 
 **Update** `step-1-basic-profile.tsx`:
@@ -787,7 +787,7 @@ const handleUpload = async () => {
 ### Frontend Deployment (Vercel)
 ```bash
 # Environment variables needed
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 NODE_ENV=production
 ```
 

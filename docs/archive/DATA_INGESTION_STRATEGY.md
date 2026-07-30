@@ -72,7 +72,7 @@ Example vector:
     source: "projects_list",
     projectId: "portfolio-ai",
     link: "https://github.com/aahil-khan/portfolio-ai",
-    deployedUrl: "https://portana.aahil-khan.tech",
+    deployedUrl: "https://portana.aahil-khan.xyz",
     tags: ["AI", "TypeScript", "React"] }
 ```
 
@@ -243,7 +243,7 @@ await qdrant.upsert(vectors.flat());
       name: "Portfolio AI",
       description: "AI assistant for portfolio",
       url: "https://github.com/aahil-khan/portfolio-ai",
-      deployedUrl: "https://portana.aahil-khan.tech",
+      deployedUrl: "https://portana.aahil-khan.xyz",
       tags: ["AI", "TypeScript", "React"],
       highlights: ["vector search", "streaming chat", "self-hosted"]
     },

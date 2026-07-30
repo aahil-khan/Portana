@@ -197,7 +197,7 @@ setTimeout(() => {
 
 ⚠️ Hard-coded API URL (line 44):
 ```
-"https://portana-api.aahil-khan.tech/api/chat/ask"
+"https://portana-api.aahil-khan.xyz/api/chat/ask"
 ```
 ⚠️ No error handling in fetch
 ⚠️ No session persistence (memory only)
@@ -357,12 +357,12 @@ try {
 
 **Current State**: Hard-coded in component:
 ```
-const response = await fetch("https://portana-api.aahil-khan.tech/api/chat/ask",
+const response = await fetch("https://portana-api.aahil-khan.xyz/api/chat/ask",
 ```
 
 **Required**: Create .env.local
 ```
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 ```
 
 **Status**: ⚠️ HARD-CODED - needs configuration
@@ -493,7 +493,7 @@ const response = await fetch(`${API_URL}/api/chat/ask`,
 
 **Current**:
 ```typescript
-const response = await fetch("https://portana-api.aahil-khan.tech/api/chat/ask",
+const response = await fetch("https://portana-api.aahil-khan.xyz/api/chat/ask",
 ```
 
 ---

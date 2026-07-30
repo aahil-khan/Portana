@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is GINA?",
+    "answer": "GINA (Grounded Insights from Natural Language Analytics) is a multi-model NL→SQL analytics system built with Next.js, Fastify, PostgreSQL, and Supabase auth. It turns natural language into conversational data analytics with structured outputs."
+  },
+  {
+    "question": "How does GINA handle latency and reliability?",
+    "answer": "GINA streams responses over SSE with a fast path for snapshot and cache restore. It uses structured conversation state for grounded follow-ups, semantic schema correction loops, and failure-tolerant API and SSE error handling."
+  }
+]

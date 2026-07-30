@@ -107,7 +107,7 @@ This allows the system prompt to analyze the message and determine response type
 - ✅ Built successfully with TypeScript (`npm run build`)
 - ✅ Committed to `dev` branch
 - ✅ Pushed to GitHub (2 commits: initial + refinement)
-- ✅ Deployed to `https://portana-api.aahil-khan.tech`
+- ✅ Deployed to `https://portana-api.aahil-khan.xyz`
 - ✅ All endpoints responsive with new JSON format
 
 ## Benefits

@@ -5,7 +5,7 @@
   },
   {
     "question": "What are you working on right now?",
-    "answer": "I'm polishing SkillMap, refining the backend for the Datesheet project, and improving Portana's intelligence. I'm focusing on building solid, production ready systems instead of quick demos."
+    "answer": "I'm improving FlowSync AI's agent memory pipeline, refining Portana's retrieval and chat quality, and shipping production-grade backend work. I'm focusing on solid systems—RAG pipelines, APIs, and cloud-native architecture—instead of quick demos."
   },
   {
     "question": "What motivates you?",
@@ -24,20 +24,24 @@
     "answer": "Portana started as an experiment to make my portfolio more interactive and honest. Instead of scrolling through static cards, I wanted people to ask questions and instantly understand my work and thought process."
   },
   {
-    "question": "Why did you build SkillMap?",
-    "answer": "SkillMap came from wanting a clearer way to understand my own progress. I wanted a platform that tracks what you’re good at, spots gaps, and gives direction based on real activity instead of guesswork."
+    "question": "Why did you build FlowSync AI?",
+    "answer": "Coding agents lose context between sessions and branches. FlowSync gives them persistent, searchable project memory via MCP—logging decisions, risks, and tasks from git history with branch-aware RAG."
+  },
+  {
+    "question": "Why did you build Konta?",
+    "answer": "I wanted browsing to become useful private knowledge instead of scattered tabs. Konta runs embeddings and retrieval on-device so search stays fast and private without sending history to a server."
   },
   {
     "question": "What is the story behind Edutube?",
     "answer": "Edutube began as a university project to solve a real problem—students needed a reliable place for lectures instead of scattered links. I took over both frontend and backend after teammates left and built out the core platform."
   },
   {
-    "question": "What was your role in Intellidine?",
-    "answer": "I worked on the backend architecture—defining services, making workflows reliable, and improving how data moved across the system. The goal was to make it structured, maintainable, and scalable."
+    "question": "What is GINA?",
+    "answer": "GINA is my NL→SQL analytics platform with multi-model routing, SSE streaming, and structured conversation state so follow-up questions stay grounded in the database schema."
   },
   {
     "question": "Which project are you most proud of?",
-    "answer": "Portana is one of my favourites because it represents who I am: fast iterations, clean execution, and meaningful use of AI. SkillMap is a close second because of how much thought went into the learning logic."
+    "answer": "Konta and FlowSync AI stand out—Konta for winning the Samsung PRISM hackathon with a privacy-first agent design, and FlowSync for production AWS RAG latency under about 1.3s median. Portana ties it together as the portfolio experience itself."
   },
   {
     "question": "How do you work?",
@@ -73,7 +77,7 @@
   },
   {
     "question": "What are you building next?",
-    "answer": "I'm improving SkillMap and making Portana smarter. I'm also exploring agentic systems and want to build tools that feel genuinely helpful in daily workflows."
+    "answer": "I'm deepening FlowSync's agent memory, hardening Portana's ingestion and chat, and exploring more agentic tooling that fits real developer workflows."
   },
   {
     "question": "What opportunities are you open to?",

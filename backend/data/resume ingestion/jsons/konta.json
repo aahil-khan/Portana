@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is Konta?",
+    "answer": "Konta is a local-first Chrome extension that converts browsing activity into a private on-device knowledge base. It uses Transformers.js and ONNX for embeddings entirely on the client, with IndexedDB storage and React for the UI."
+  },
+  {
+    "question": "How does Konta's retrieval pipeline work?",
+    "answer": "Konta runs on-device semantic embeddings with a multi-stage retrieval pipeline for low-latency private search. A knowledge graph links pages through semantic, temporal, and contextual relationships, and sessionization with context boundary detection keeps unrelated browsing tasks from merging."
+  }
+]

@@ -113,7 +113,7 @@ interface CommandResponse {
 ### Sample Test Output
 
 ```bash
-$ curl https://portana-api.aahil-khan.tech/api/commands/projects
+$ curl https://portana-api.aahil-khan.xyz/api/commands/projects
 
 {
   "type": "command",
@@ -192,7 +192,7 @@ PATH B (Direct Command):
 - ✅ Built successfully with TypeScript
 - ✅ Committed to `dev` branch
 - ✅ Pushed to GitHub
-- ✅ Deployed to `https://portana-api.aahil-khan.tech`
+- ✅ Deployed to `https://portana-api.aahil-khan.xyz`
 - ✅ All 8 command endpoints live and tested
 
 ## Integration Points

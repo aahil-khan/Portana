@@ -66,7 +66,7 @@
 **Criticality**: MEDIUM (v0.1)
 
 ### 5. HARD-CODED API URL
-**Current**: "https://portana-api.aahil-khan.tech" in code
+**Current**: "https://portana-api.aahil-khan.xyz" in code
 **Needed**: Environment variable NEXT_PUBLIC_API_URL
 
 **Impact**: Can't test locally, hard to maintain
@@ -156,7 +156,7 @@
 
 3. **Create .env.local**
    ```
-   NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+   NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
    ```
 
 ### This Week
@@ -213,7 +213,7 @@ setParsedData(parsed);
 
 ### ❌ Current: Hard-coded URL
 ```typescript
-const response = await fetch("https://portana-api.aahil-khan.tech/api/chat/ask", {
+const response = await fetch("https://portana-api.aahil-khan.xyz/api/chat/ask", {
 ```
 
 ### ✅ Should be: Configured
@@ -275,7 +275,7 @@ catch (error) {
 npm install
 
 # Create .env.local
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 
 # Development server
 npm run dev
@@ -290,11 +290,11 @@ npm run dev
 - Check Cookies for JWT (httpOnly)
 
 ### Backend Status
-Backend API is live at: https://portana-api.aahil-khan.tech
+Backend API is live at: https://portana-api.aahil-khan.xyz
 
 Test health endpoint:
 ```bash
-curl https://portana-api.aahil-khan.tech/health
+curl https://portana-api.aahil-khan.xyz/health
 ```
 
 ## Bottlenecks & Solutions

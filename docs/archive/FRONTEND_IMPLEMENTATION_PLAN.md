@@ -11,7 +11,7 @@
 
 This plan breaks down frontend implementation into **15 sequential steps** with clear verification checkpoints after each step. Each step is scoped to 1-4 hours of work.
 
-**Verification Method**: After each step, user will manually test functionality with the live backend at `https://portana-api.aahil-khan.tech`
+**Verification Method**: After each step, user will manually test functionality with the live backend at `https://portana-api.aahil-khan.xyz`
 
 ---
 
@@ -244,7 +244,7 @@ export const adminApi = {
 
 **Create `.env.local`**:
 ```
-NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech
+NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz
 ```
 
 **What to Verify After Step 1**:
@@ -273,7 +273,7 @@ npm run build  # Should pass with no TypeScript errors
 
 **What to Verify After Step 2**:
 - ✅ Form submits when all fields valid
-- ✅ Logs show API call to `https://portana-api.aahil-khan.tech/api/onboarding/start`
+- ✅ Logs show API call to `https://portana-api.aahil-khan.xyz/api/onboarding/start`
 - ✅ Response contains `user_id` and `session_token`
 - ✅ localStorage contains `session_token` key
 - ✅ Continue button disabled during API call
@@ -772,7 +772,7 @@ export function ErrorBanner({ message, onDismiss }: { message: string; onDismiss
 **Steps**:
 - Push code to GitHub (main branch)
 - Deploy to Vercel via GitHub integration
-- Set environment variable: `NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech`
+- Set environment variable: `NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz`
 - Run all test scenarios on production
 - Test mobile on real device
 - Monitor for errors (Vercel analytics)
@@ -831,7 +831,7 @@ After each step completion, I will ask you to verify:
 **Testing Tools**:
 - Browser DevTools (F12): Console, Network, Storage tabs
 - Vercel Analytics: After deployment
-- Testing API: `curl https://portana-api.aahil-khan.tech/health`
+- Testing API: `curl https://portana-api.aahil-khan.xyz/health`
 
 **Commands**:
 ```bash
@@ -842,7 +842,7 @@ npm test         # Run tests (if configured)
 ```
 
 **API Base URL**:
-`https://portana-api.aahil-khan.tech`
+`https://portana-api.aahil-khan.xyz`
 
 **Documentation**:
 - PRD: `/portfolioOS/PRD.md`

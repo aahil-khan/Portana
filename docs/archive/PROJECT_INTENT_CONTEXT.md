@@ -173,7 +173,7 @@ Visitor asks question:
 
 When complete, you should be able to:
 
-1. ✅ Visit portana.aahil-khan.tech
+1. ✅ Visit portana.aahil-khan.xyz
 2. ✅ Ask "Who are you?"
 3. ✅ Get: "I'm Aahil Khan, 3rd year CS student..." with links to LinkedIn
 4. ✅ Ask "What projects have you built?"

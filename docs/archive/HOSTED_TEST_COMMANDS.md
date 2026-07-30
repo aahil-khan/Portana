@@ -4,18 +4,18 @@ After deployment completes (~30 seconds), run:
 
 ```bash
 # Trigger GitHub ingestion on hosted backend
-curl -X POST https://portana-api.aahil-khan.tech/api/admin/ingest/github \
+curl -X POST https://portana-api.aahil-khan.xyz/api/admin/ingest/github \
   -H "Content-Type: application/json"
 
 # Check logs to see ingestion progress
-curl https://portana-api.aahil-khan.tech/api/admin/logs?limit=50&level=info | jq '.logs[] | select(.component=="GitHubIngestor")' | head -50
+curl https://portana-api.aahil-khan.xyz/api/admin/logs?limit=50&level=info | jq '.logs[] | select(.component=="GitHubIngestor")' | head -50
 
 # Verify vectors were created in Qdrant  
 # (This requires accessing Qdrant directly - may not be exposed)
 
 # Test chat references GitHub
 SESSION_ID="test-$(date +%s)"
-curl -X POST https://portana-api.aahil-khan.tech/api/chat/message \
+curl -X POST https://portana-api.aahil-khan.xyz/api/chat/message \
   -H "Content-Type: application/json" \
   -d "{
     \"sessionId\": \"$SESSION_ID\",

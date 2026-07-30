@@ -104,7 +104,7 @@ Frontend Parses JSON Response
 
 ## Deployment Info
 
-- **Backend URL:** `https://portana-api.aahil-khan.tech`
+- **Backend URL:** `https://portana-api.aahil-khan.xyz`
 - **Latest Commit:** "refine: stricter JSON-only prompt to prevent markdown wrapping"
 - **Branch:** `dev`
 - **Status:** ✅ Live and tested

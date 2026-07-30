@@ -31,6 +31,7 @@ interface ResumeJSON {
   education?: Array<{
     institution: string;
     degree: string;
+    duration?: string;
     cgpa?: string;
     grade?: string;
   }>;
@@ -45,6 +46,7 @@ interface ResumeJSON {
   }>;
   projects?: Array<{
     name: string;
+    subtitle?: string;
     technologies?: string[] | Record<string, string[]>;
     description: string;
     highlights?: string[];
@@ -194,10 +196,11 @@ export class ResumeIngestor {
    */
   private getProjectIdFromFilename(filename: string): string {
     const nameMap: Record<string, string> = {
-      'skillmap.json': 'SkillMap',
       'edutube.json': 'Thapar EduTube',
-      'intellidine.json': 'Intellidine',
-      'vehicle-parking-app.json': 'Vehicle Parking Management System',
+      'flowsync.json': 'FlowSync AI',
+      'konta.json': 'Konta',
+      'portana.json': 'Portana',
+      'gina.json': 'GINA',
       'experience.json': 'experience',
       'achivements.json': 'achievements',
     };
@@ -262,7 +265,7 @@ export class ResumeIngestor {
     // EDUCATION
     if (this.resume.education && this.resume.education.length > 0) {
       this.resume.education.forEach((edu, eduIdx) => {
-        const eduText = `${edu.institution} - ${edu.degree}${edu.cgpa ? ` (CGPA: ${edu.cgpa})` : ''}${edu.grade ? ` (Grade: ${edu.grade})` : ''}`;
+        const eduText = `${edu.institution} - ${edu.degree}${edu.duration ? ` (${edu.duration})` : ''}${edu.cgpa ? ` (CGPA: ${edu.cgpa})` : ''}${edu.grade ? ` (Grade: ${edu.grade})` : ''}`;
         chunks.push({
           id: `resume-education-${eduIdx}`,
           text: eduText,
@@ -291,10 +294,8 @@ export class ResumeIngestor {
           jobHeader +
           '\n' +
           techsLine +
-          '\n' +
-          job.description +
-          '\n' +
-          (job.responsibilities ? 'Responsibilities:\n' + job.responsibilities.join('\n') : '');
+          (job.description ? '\n' + job.description : '') +
+          (job.responsibilities ? '\nResponsibilities:\n' + job.responsibilities.join('\n') : '');
 
         const jobChunks = this.chunkText(fullJobText);
         jobChunks.forEach((text, chunkIdx) => {
@@ -322,7 +323,9 @@ export class ResumeIngestor {
     if (this.resume.projects && this.resume.projects.length > 0) {
       this.resume.projects.forEach((project, projIdx) => {
         // Create a header with project name and context for better searchability
-        const projectHeader = `Project: ${project.name}`;
+        const projectHeader = project.subtitle
+          ? `Project: ${project.name} — ${project.subtitle}`
+          : `Project: ${project.name}`;
         
         // Handle both array and nested object formats for technologies
         let techsLine = '';

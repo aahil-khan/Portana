@@ -22,7 +22,7 @@
 
 ## BACKEND API
 
-**Base URL**: `https://portana-api.aahil-khan.tech`
+**Base URL**: `https://portana-api.aahil-khan.xyz`
 
 All endpoints documented in the PRD Section 5. Key endpoints for frontend:
 
@@ -368,7 +368,7 @@ while (true) {
 
 - **Host on**: Vercel (recommended for Next.js)
 - **Environment Variables**:
-  - `NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.tech`
+  - `NEXT_PUBLIC_API_URL=https://portana-api.aahil-khan.xyz`
   - `NODE_ENV=production`
 
 ---

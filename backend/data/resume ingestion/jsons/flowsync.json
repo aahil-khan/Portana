@@ -1,0 +1,14 @@
+[
+  {
+    "question": "What is FlowSync AI and what problem does it solve?",
+    "answer": "FlowSync AI is persistent project memory for coding agents. It gives agents branch-aware context via MCP so they can search decisions, risks, and tasks across git history instead of losing context between sessions."
+  },
+  {
+    "question": "How is FlowSync AI architected on AWS?",
+    "answer": "It uses an event-driven pipeline on Lambda and API Gateway: git diffs are processed asynchronously, Bedrock extracts structured insights, and DynamoDB plus S3 back retrieval with vector search. A VS Code extension and MCP server expose logging, search, and recent changes to the agent."
+  },
+  {
+    "question": "What performance did you achieve with FlowSync AI?",
+    "answer": "The branch-aware RAG pipeline with DynamoDB caching reached about 1.26s median push-to-search latency, with p95 around 1.60s."
+  }
+]

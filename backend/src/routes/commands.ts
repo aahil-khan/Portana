@@ -217,6 +217,7 @@ export async function registerCommandRoutes(fastify: FastifyInstance): Promise<v
           id: `edu-${idx}`,
           institution: edu.institution,
           degree: edu.degree,
+          duration: edu.duration,
           cgpa: edu.cgpa || edu.grade,
         })),
       };

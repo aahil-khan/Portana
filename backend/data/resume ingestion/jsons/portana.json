@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is Portana and why did you build it?",
+    "answer": "Portana is my AI-powered interactive portfolio. I built it so visitors can explore projects conversationally instead of scrolling static cards, with dynamic project insights and automated content sync from GitHub and LinkedIn via n8n workflows."
+  },
+  {
+    "question": "What is the technical stack behind Portana?",
+    "answer": "The frontend uses Next.js, the API is Fastify with TypeScript, retrieval uses Qdrant, automation runs through n8n, analytics use Umami, and the stack is deployed with Docker."
+  }
+]
